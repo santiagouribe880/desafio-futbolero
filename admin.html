@@ -1,110 +1,46 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Administrador | Desafío Futbolero</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #003300;
-      color: white;
-      text-align: center;
-      padding: 20px;
-    }
-
-    h1 {
-      color: #00ff00;
-      margin-bottom: 10px;
-    }
-
-    .admin-box {
-      background: #002200;
-      border: 2px solid #00ff00;
-      border-radius: 12px;
-      padding: 25px;
-      width: 90%;
-      max-width: 500px;
-      margin: 30px auto;
-      box-shadow: 0 0 15px rgba(0,255,0,0.3);
-    }
-
-    input[type="password"], input[type="file"], input[type="number"] {
-      width: 80%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-    }
-
-    button {
-      background: #00cc00;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background: #009900;
-    }
-
-    #adminPanel {
-      display: none;
-    }
-
-    .info {
-      font-size: 0.9em;
-      color: #aaa;
-    }
-
-    footer {
-      margin-top: 40px;
-      color: #999;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Desafío Futbolero</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Panel de Administrador</h1>
+  <header>
+    <h1>⚙️ Panel Administrador</h1>
+  </header>
 
-  <!-- Login -->
-  <div id="loginBox" class="admin-box">
-    <p>Ingresa la clave de administrador:</p>
-    <input type="password" id="adminKey" placeholder="Contraseña" />
-    <br />
-    <button id="loginBtn">Acceder</button>
-    <p id="loginMsg" class="info"></p>
-  </div>
+  <main id="admin-panel">
+    <section id="login-section">
+      <h2>Ingreso Administrador</h2>
+      <input type="password" id="admin-pass" placeholder="Contraseña">
+      <button id="btn-login">Entrar</button>
+      <p id="login-msg"></p>
+    </section>
 
-  <!-- Panel -->
-  <div id="adminPanel" class="admin-box">
-    <h2>Gestión de Jornada</h2>
+    <section id="config-section" style="display:none;">
+      <h2>Configuración de Jornada</h2>
 
-    <label>Subir archivo CSV de la jornada:</label><br />
-    <input type="file" id="csvFile" accept=".csv" /><br />
-    <button id="uploadCsvBtn">Cargar Jornada</button>
-    <p class="info">El archivo debe tener columnas: <b>Partido, Equipo1, Equipo2</b></p>
+      <label>🏆 Premio de la jornada:</label>
+      <input type="text" id="premio" placeholder="Ej: $200.000">
 
-    <hr />
+      <label>⏰ Hora límite (hora Colombia):</label>
+      <input type="datetime-local" id="hora-limite-input">
 
-    <label>Definir acumulado de la jornada:</label><br />
-    <input type="number" id="acumuladoInput" placeholder="Ej: 100000" /><br />
-    <button id="saveAcumuladoBtn">Guardar Acumulado</button>
+      <div>
+        <button id="btn-activar">✅ Activar Jornada</button>
+        <button id="btn-desactivar">🚫 Desactivar Jornada</button>
+      </div>
 
-    <hr />
+      <p id="estado"></p>
+    </section>
+  </main>
 
-    <label>Activar jornada actual:</label><br />
-    <button id="activarJornadaBtn">Activar</button>
-    <p id="adminMsg" class="info"></p>
-  </div>
+  <footer>
+    <p>© 2025 Desafío Futbolero | Panel de Administración</p>
+  </footer>
 
-  <footer>© 2025 Desafío Futbolero</footer>
-
-  <script src="admin.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
