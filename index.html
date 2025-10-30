@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Desafío Futbolero ⚽</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Desafío Futbolero</h1>
+  </header>
+
+  <main>
+    <section class="login-section">
+      <p>Ingresa tu código de participación:</p>
+      <input id="codeInput" type="text" placeholder="Código único" />
+      <button id="validateBtn">Ingresar</button>
+      <p id="accessMsg"></p>
+    </section>
+
+    <section id="adminSection" class="hidden">
+      <h2>Panel Administrador ⚙️</h2>
+      <label>Acumulado actual:</label>
+      <input id="acumuladoInput" type="number" placeholder="Ej: 150000" />
+      <br />
+      <label>Subir jornada (archivo CSV):</label>
+      <input id="csvInput" type="file" accept=".csv" />
+      <button id="loadCSVBtn">Cargar Jornada</button>
+      <p id="adminMsg"></p>
+    </section>
+
+    <section id="jornadaCard" class="hidden">
+      <h2>Pronósticos Jornada</h2>
+      <p id="acumuladoDisplay"></p>
+      <form id="pronForm"></form>
+      <button id="sendBtn" class="hidden">Enviar Pronósticos</button>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Desafío Futbolero</p>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
