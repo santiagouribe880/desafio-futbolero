@@ -1,69 +1,96 @@
-/*
-  main.js - Desafío Futbolero
-  Lee CSV con columnas: codigo, partido, equipo_local, equipo_visitante
-  Genera formulario de pronósticos y permite enviar resultados.
-*/
+// main.js - lee jornada activada y muestra formulario según CSV (columnas: codigo,partido,equipo_local,equipo_visitante)
+document.addEventListener('DOMContentLoaded', () => {
+  const codeInput = document.getElementById('codeInput');
+  const validateBtn = document.getElementById('validateBtn');
+  const accessMsg = document.getElementById('accessMsg');
+  const jornadaCard = document.getElementById('jornadaCard');
+  const matchesContainer = document.getElementById('matchesContainer');
+  const pronForm = document.getElementById('pronForm');
+  const acumuladoText = document.getElementById('acumuladoText');
+  const playerCodeHidden = document.getElementById('playerCodeHidden');
 
-// Elementos
-const codeInput = document.getElementById("codeInput");
-const validateBtn = document.getElementById("validateBtn");
-const jornadaCard = document.getElementById("jornadaCard");
-const pronForm = document.getElementById("pronForm");
-const matchesContainer = document.getElementById("matchesContainer");
-const accessMsg = document.getElementById("accessMsg");
-
-// Validar código
-validateBtn.addEventListener("click", () => {
-  const code = codeInput.value.trim().toUpperCase();
-  if (code === "") {
-    accessMsg.textContent = "❌ Ingresa un código válido.";
-    return;
+  function getCSVData(){
+    const csv = localStorage.getItem('jornadaCSV');
+    if(!csv) return null;
+    const lines = csv.split(/\\r?\\n/).map(l=>l.trim()).filter(l=>l!=='');
+    if(lines.length < 2) return null;
+    const headers = lines[0].split(',').map(h=>h.trim().toLowerCase());
+    const rows = lines.slice(1).map(line=>{
+      const cols = line.split(',').map(c=>c.trim());
+      const obj = {};
+      headers.forEach((h,i)=> obj[h] = cols[i] || '');
+      return obj;
+    });
+    return rows;
   }
 
-  const jornadaActiva = localStorage.getItem("jornadaActiva");
-  const csvData = localStorage.getItem("jornadaCSV");
+  validateBtn.addEventListener('click', () => {
+    const code = (codeInput.value || '').trim().toUpperCase();
+    if(!code){ accessMsg.textContent = 'Ingresa un código.'; return; }
 
-  if (!jornadaActiva || !csvData) {
-    accessMsg.textContent = "⚠️ No hay una jornada activa actualmente.";
-    return;
-  }
+    if(localStorage.getItem('jornadaActiva') !== 'true'){
+      accessMsg.textContent = 'No hay jornada activa.';
+      return;
+    }
 
-  // Convertir CSV a lista de partidos
-  const lines = csvData.split("\n").filter((l) => l.trim() !== "");
-  const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
-  const data = lines.slice(1).map(line => {
-    const values = line.split(",");
-    const obj = {};
-    headers.forEach((h, i) => (obj[h] = values[i]?.trim()));
-    return obj;
+    const data = getCSVData();
+    if(!data){ accessMsg.textContent = 'No hay datos de jornada (CSV vacío).'; return; }
+
+    // comprobar que el código esté en la lista de códigos permitidos
+    const found = data.find(r => (r.codigo || '').toUpperCase() === code);
+    if(!found){
+      accessMsg.textContent = 'Código no válido. Consulta con el administrador.';
+      return;
+    }
+
+    accessMsg.textContent = 'Código válido. Cargando formulario...';
+    // mostrar formulario con TODOS los partidos (no solo el del código)
+    showForm(data, code);
   });
 
-  // Buscar si el código existe en la primera columna
-  const participante = data.find(d => d.codigo?.toUpperCase() === code);
-  if (!participante) {
-    accessMsg.textContent = "🚫 Código no encontrado. Verifica con el administrador.";
-    return;
+  function showForm(data, code){
+    document.querySelectorAll('.login-box, .login-section').forEach(n=>{ if(n) n.style.display='none'; });
+    jornadaCard.style.display = 'block';
+    matchesContainer.innerHTML = '';
+    const acumulado = localStorage.getItem('acumuladoJornada') || '0';
+    if(acumuladoText) acumuladoText.textContent = `💰 Premio: $${Number(acumulado).toLocaleString('es-CO')}`;
+
+    data.forEach((p, idx) => {
+      const div = document.createElement('div');
+      div.className = 'match-row';
+      div.innerHTML = `
+        <p><strong>${p.equipo_local}</strong> vs <strong>${p.equipo_visitante}</strong></p>
+        <input type="number" min="0" id="gL_${idx}" placeholder="Goles ${p.equipo_local}" required>
+        <input type="number" min="0" id="gV_${idx}" placeholder="Goles ${p.equipo_visitante}" required>
+        <hr>
+      `;
+      matchesContainer.appendChild(div);
+    });
+    playerCodeHidden.value = code;
   }
 
-  accessMsg.textContent = "✅ Código válido. Cargando jornada...";
-  setTimeout(() => mostrarJornada(code, data), 800);
+  // envío (aún no manda a Sheets, solo demo — lo podemos conectar)
+  pronForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const code = playerCodeHidden.value;
+    // simple validación de que se hayan llenado inputs
+    const inputs = matchesContainer.querySelectorAll('input');
+    for(let i=0;i<inputs.length;i++){
+      if(inputs[i].value === '') { alert('Completa todos los marcadores.'); return; }
+    }
+    // marcar código usado (local)
+    localStorage.setItem(`codigo_${code}_usado`, 'true');
+    // opcional: si quieres que no haya jornada activa tras cada envío, descomenta:
+    // localStorage.removeItem('jornadaActiva');
+
+    alert('Pronóstico enviado. Gracias!');
+    window.location.reload();
+  });
+
+  // Si quieres que la página muestre mensaje al cargar:
+  if(localStorage.getItem('jornadaActiva') === 'true'){
+    accessMsg.textContent = 'Jornada activa — ingresa tu código.';
+  } else {
+    accessMsg.textContent = 'No hay jornada activa.';
+  }
 });
-
-// Mostrar jornada
-function mostrarJornada(code, data) {
-  document.querySelector(".login-box").style.display = "none";
-  jornadaCard.style.display = "block";
-
-  const acumulado = localStorage.getItem("acumuladoJornada") || "No definido";
-  document.getElementById("acumuladoText").textContent = `💰 Premio: $${acumulado}`;
-
-  // Crear inputs de pronóstico
-  matchesContainer.innerHTML = "";
-  data.forEach((p, index) => {
-    const div = document.createElement("div");
-    div.classList.add("match-row");
-    div.innerHTML = `
-      <p><b>${p.equipo_local}</b> vs <b>${p.equipo_visitante}</b></p>
-      <input type="number" id="eq1_${index}" placeholder="Goles ${p.equipo_local}" min="0">
-      <input type="number" id="eq2_${index_
-
