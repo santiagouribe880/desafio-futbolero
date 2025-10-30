@@ -1,6 +1,7 @@
 /*
   main.js - Desafío Futbolero
-  Muestra formulario de pronósticos dinámicamente según la jornada activa.
+  Lee CSV con columnas: codigo, partido, equipo_local, equipo_visitante
+  Genera formulario de pronósticos y permite enviar resultados.
 */
 
 // Elementos
@@ -11,74 +12,58 @@ const pronForm = document.getElementById("pronForm");
 const matchesContainer = document.getElementById("matchesContainer");
 const accessMsg = document.getElementById("accessMsg");
 
-// Validación de código
+// Validar código
 validateBtn.addEventListener("click", () => {
-  const code = codeInput.value.trim();
+  const code = codeInput.value.trim().toUpperCase();
   if (code === "") {
     accessMsg.textContent = "❌ Ingresa un código válido.";
     return;
   }
 
-  // Validar que haya jornada activa
   const jornadaActiva = localStorage.getItem("jornadaActiva");
-  if (!jornadaActiva) {
-    accessMsg.textContent = "⚠️ No hay una jornada activa actualmente.";
-    return;
-  }
-
-  accessMsg.textContent = "✅ Código aceptado. Cargando jornada...";
-  setTimeout(() => {
-    mostrarJornada(code);
-  }, 800);
-});
-
-// Mostrar jornada
-function mostrarJornada(code) {
-  document.querySelector(".login-box").style.display = "none";
-  jornadaCard.style.display = "block";
-
   const csvData = localStorage.getItem("jornadaCSV");
-  const acumulado = localStorage.getItem("acumuladoJornada") || "No definido";
 
-  if (!csvData) {
-    matchesContainer.innerHTML = "<p>No hay datos de jornada cargados.</p>";
+  if (!jornadaActiva || !csvData) {
+    accessMsg.textContent = "⚠️ No hay una jornada activa actualmente.";
     return;
   }
 
   // Convertir CSV a lista de partidos
   const lines = csvData.split("\n").filter((l) => l.trim() !== "");
-  const partidos = lines.slice(1).map((line) => {
-    const [id, equipo1, equipo2] = line.split(",");
-    return { id, equipo1, equipo2 };
+  const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+  const data = lines.slice(1).map(line => {
+    const values = line.split(",");
+    const obj = {};
+    headers.forEach((h, i) => (obj[h] = values[i]?.trim()));
+    return obj;
   });
 
-  // Mostrar acumulado
+  // Buscar si el código existe en la primera columna
+  const participante = data.find(d => d.codigo?.toUpperCase() === code);
+  if (!participante) {
+    accessMsg.textContent = "🚫 Código no encontrado. Verifica con el administrador.";
+    return;
+  }
+
+  accessMsg.textContent = "✅ Código válido. Cargando jornada...";
+  setTimeout(() => mostrarJornada(code, data), 800);
+});
+
+// Mostrar jornada
+function mostrarJornada(code, data) {
+  document.querySelector(".login-box").style.display = "none";
+  jornadaCard.style.display = "block";
+
+  const acumulado = localStorage.getItem("acumuladoJornada") || "No definido";
   document.getElementById("acumuladoText").textContent = `💰 Premio: $${acumulado}`;
 
-  // Crear inputs para cada partido
+  // Crear inputs de pronóstico
   matchesContainer.innerHTML = "";
-  partidos.forEach((p, index) => {
+  data.forEach((p, index) => {
     const div = document.createElement("div");
     div.classList.add("match-row");
     div.innerHTML = `
-      <p><b>${p.equipo1}</b> vs <b>${p.equipo2}</b></p>
-      <input type="number" id="eq1_${index}" placeholder="Goles ${p.equipo1}" min="0">
-      <input type="number" id="eq2_${index}" placeholder="Goles ${p.equipo2}" min="0">
-    `;
-    matchesContainer.appendChild(div);
-  });
+      <p><b>${p.equipo_local}</b> vs <b>${p.equipo_visitante}</b></p>
+      <input type="number" id="eq1_${index}" placeholder="Goles ${p.equipo_local}" min="0">
+      <input type="number" id="eq2_${index_
 
-  // Guardar código del jugador
-  document.getElementById("playerCodeHidden").value = code;
-}
-
-// Enviar pronóstico (solo demostrativo)
-pronForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-
-  const code = document.getElementById("playerCodeHidden").value;
-  localStorage.removeItem("jornadaActiva"); // Desactiva el código una vez enviado
-
-  alert(`✅ Pronóstico del código ${code} enviado correctamente.`);
-  window.location.href = "/";
-});
