@@ -1,136 +1,67 @@
-// ============================
-// VARIABLES GLOBALES
-// ============================
-const adminPassword = "admin123";
-const horaColombiaOffset = -5; // UTC-5
+// URLs de los archivos CSV en GitHub (todo en minúscula)
+const JORNADA_CSV_URL = "https://raw.githubusercontent.com/santiagouribe880/desafio-futbolero/main/jornada.csv";
+const CODIGOS_CSV_URL = "https://raw.githubusercontent.com/santiagouribe880/desafio-futbolero/main/codigos.csv";
 
-// ============================
-// ADMINISTRADOR
-// ============================
-const loginBtn = document.getElementById("btn-login");
-const adminPassInput = document.getElementById("admin-pass");
-const configSection = document.getElementById("config-section");
+// Variables globales
+let jornadaActiva = false;
+let partidos = [];
+let codigosValidos = [];
+let premioJornada = 0;
+let horaLimite = null;
 
-if (loginBtn) {
-  loginBtn.addEventListener("click", () => {
-    const pass = adminPassInput.value.trim();
-    if (pass === adminPassword) {
-      document.getElementById("login-section").style.display = "none";
-      configSection.style.display = "block";
-      cargarConfiguracion();
-    } else {
-      document.getElementById("login-msg").textContent = "❌ Contraseña incorrecta.";
-    }
-  });
-}
-
-function cargarConfiguracion() {
-  const data = JSON.parse(localStorage.getItem("configJornada"));
-  if (data) {
-    document.getElementById("premio").value = data.premio || "";
-    document.getElementById("hora-limite-input").value = data.horaLimite || "";
-    document.getElementById("estado").textContent = data.activa
-      ? "🟢 Jornada activa"
-      : "🔴 Jornada inactiva";
-  }
-}
-
-const btnActivar = document.getElementById("btn-activar");
-const btnDesactivar = document.getElementById("btn-desactivar");
-
-if (btnActivar) {
-  btnActivar.addEventListener("click", () => {
-    const premio = document.getElementById("premio").value;
-    const horaLimite = document.getElementById("hora-limite-input").value;
-
-    if (!premio || !horaLimite) {
-      alert("Por favor ingresa el premio y la hora límite.");
-      return;
-    }
-
-    const config = {
-      activa: true,
-      premio,
-      horaLimite,
-    };
-    localStorage.setItem("configJornada", JSON.stringify(config));
-    document.getElementById("estado").textContent = "🟢 Jornada activa";
-    alert("✅ Jornada activada con éxito");
-  });
-}
-
-if (btnDesactivar) {
-  btnDesactivar.addEventListener("click", () => {
-    const config = {
-      activa: false,
-      premio: "",
-      horaLimite: "",
-    };
-    localStorage.setItem("configJornada", JSON.stringify(config));
-    document.getElementById("estado").textContent = "🔴 Jornada inactiva";
-    alert("🚫 Jornada desactivada");
-  });
-}
-
-// ============================
-// PARTICIPANTE
-// ============================
-document.addEventListener("DOMContentLoaded", () => {
-  const data = JSON.parse(localStorage.getItem("configJornada"));
-  if (!data) return;
-
-  const premioEl = document.getElementById("premio-jornada");
-  const horaEl = document.getElementById("hora-limite");
-  const contador = document.getElementById("contador");
-  const mensaje = document.getElementById("mensaje");
-  const btnIngresar = document.getElementById("btn-ingresar");
-
-  if (data.premio) premioEl.textContent = `🏆 Premio: ${data.premio}`;
-  if (data.horaLimite) {
-    const hora = new Date(data.horaLimite);
-    horaEl.textContent = `⏰ Hora límite: ${hora.toLocaleString("es-CO", { timeZone: "America/Bogota" })}`;
-
-    // Cuenta regresiva
-    const countdown = setInterval(() => {
-      const ahora = new Date();
-      const diferencia = hora - ahora;
-      if (diferencia <= 0) {
-        clearInterval(countdown);
-        contador.textContent = "⛔ Jornada finalizada.";
-        if (btnIngresar) btnIngresar.disabled = true;
-        return;
-      }
-      const horas = Math.floor(diferencia / (1000 * 60 * 60));
-      const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
-      const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
-      contador.textContent = `⏳ Tiempo restante: ${horas}h ${minutos}m ${segundos}s`;
-    }, 1000);
-  }
-
-  // Validar ingreso
-  if (btnIngresar) {
-    btnIngresar.addEventListener("click", () => {
-      if (!data.activa) {
-        mensaje.textContent = "🚫 La jornada no está activa.";
-        return;
-      }
-
-      const ahora = new Date();
-      if (data.horaLimite && ahora > new Date(data.horaLimite)) {
-        mensaje.textContent = "⛔ La jornada ha finalizado.";
-        return;
-      }
-
-      const codigo = document.getElementById("codigo").value.trim();
-      if (!codigo) {
-        mensaje.textContent = "Por favor ingresa un código válido.";
-        return;
-      }
-
-      // Mostrar formulario de pronósticos (simulado)
-      document.getElementById("ingreso-codigo").style.display = "none";
-      document.getElementById("formulario-pronosticos").style.display = "block";
-      mensaje.textContent = "";
+// Función para cargar CSV desde GitHub
+async function cargarCSV(url) {
+    const response = await fetch(url);
+    const data = await response.text();
+    const filas = data.trim().split("\n").map(linea => linea.split(","));
+    const encabezados = filas[0].map(h => h.trim());
+    return filas.slice(1).map(fila => {
+        let obj = {};
+        encabezados.forEach((key, i) => obj[key] = fila[i]?.trim());
+        return obj;
     });
-  }
-});
+}
+
+// Función para iniciar la aplicación
+async function iniciarApp() {
+    try {
+        // Cargar datos desde GitHub
+        partidos = await cargarCSV(JORNADA_CSV_URL);
+        codigosValidos = (await cargarCSV(CODIGOS_CSV_URL)).map(c => c.codigo);
+
+        // Verificar si hay jornada activa
+        const estado = localStorage.getItem("jornadaActiva");
+        jornadaActiva = estado === "true";
+        premioJornada = localStorage.getItem("premioJornada") || 0;
+        horaLimite = localStorage.getItem("horaLimite");
+
+        if (jornadaActiva) {
+            document.getElementById("estadoJornada").textContent = 
+                `Jornada activa — ingresa tu código.`;
+        } else {
+            document.getElementById("estadoJornada").textContent = 
+                `No hay jornada activa actualmente.`;
+        }
+
+        // Mostrar temporizador si hay hora límite
+        if (horaLimite) {
+            iniciarCuentaRegresiva();
+        }
+
+    } catch (error) {
+        console.error("Error al cargar los archivos CSV:", error);
+    }
+}
+
+// Función para validar código del participante
+function ingresarCodigo() {
+    const codigoIngresado = document.getElementById("codigoInput").value.trim();
+    const seccionPronostico = document.getElementById("seccionPronostico");
+    const listaPartidos = document.getElementById("listaPartidos");
+
+    if (!jornadaActiva) {
+        alert("No hay una jornada activa en este momento.");
+        return;
+    }
+
+    if (codigosValidos.includes(c
