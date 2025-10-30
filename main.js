@@ -1,77 +1,84 @@
-/* =====================================================
-   Desafío Futbolero - Lógica Principal (versión 2.0)
-   =====================================================
-   ✅ Lee la jornada activa guardada por el administrador
-   ✅ Permite ingresar un código único y registrar pronósticos
-   ✅ Envía datos a Google Sheets
-   ✅ Inhabilita el código tras enviar
-===================================================== */
+/*
+  main.js - Desafío Futbolero
+  Muestra formulario de pronósticos dinámicamente según la jornada activa.
+*/
 
-(() => {
-  // --- Configuración ---
-  const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbwvCgDNc9zRmaREnv1L6uZKZH8Y2nvX3cvQSL-ihc1DdOWN_Iu3mjX7CjxfuhUJx-AV/exec";
+// Elementos
+const codeInput = document.getElementById("codeInput");
+const validateBtn = document.getElementById("validateBtn");
+const jornadaCard = document.getElementById("jornadaCard");
+const pronForm = document.getElementById("pronForm");
+const matchesContainer = document.getElementById("matchesContainer");
+const accessMsg = document.getElementById("accessMsg");
 
-  // --- Elementos del DOM ---
-  const codeInput = document.getElementById('codeInput');
-  const validateBtn = document.getElementById('validateBtn');
-  const jornadaCard = document.getElementById('jornadaCard');
-  const matchesContainer = document.getElementById('matchesContainer');
-  const pronForm = document.getElementById('pronForm');
-  const accessMsg = document.getElementById('accessMsg');
-  const acumuladoDiv = document.getElementById('acumuladoDiv');
-  const countdown = document.getElementById('countdown');
-  
-  // --- Variables de control ---
-  let jornadaActiva = [];
-  let userCode = null;
-
-  // --- Cargar jornada activa desde localStorage ---
-  function cargarJornada() {
-    const jornadaData = localStorage.getItem("jornadaActiva");
-    if (!jornadaData) {
-      accessMsg.textContent = "⚠️ No hay jornada activa por el momento.";
-      accessMsg.style.color = "orange";
-      validateBtn.disabled = true;
-      return false;
-    }
-    jornadaActiva = JSON.parse(jornadaData);
-    return true;
+// Validación de código
+validateBtn.addEventListener("click", () => {
+  const code = codeInput.value.trim();
+  if (code === "") {
+    accessMsg.textContent = "❌ Ingresa un código válido.";
+    return;
   }
 
-  // --- Validar código ingresado ---
-  validateBtn.addEventListener("click", () => {
-    userCode = codeInput.value.trim();
+  // Validar que haya jornada activa
+  const jornadaActiva = localStorage.getItem("jornadaActiva");
+  if (!jornadaActiva) {
+    accessMsg.textContent = "⚠️ No hay una jornada activa actualmente.";
+    return;
+  }
 
-    if (!userCode) {
-      accessMsg.textContent = "Por favor ingresa tu código.";
-      accessMsg.style.color = "red";
-      return;
-    }
+  accessMsg.textContent = "✅ Código aceptado. Cargando jornada...";
+  setTimeout(() => {
+    mostrarJornada(code);
+  }, 800);
+});
 
-    const valido = jornadaActiva.some(j => j.codigo === userCode);
+// Mostrar jornada
+function mostrarJornada(code) {
+  document.querySelector(".login-box").style.display = "none";
+  jornadaCard.style.display = "block";
 
-    if (!valido) {
-      accessMsg.textContent = "Código inválido o no registrado.";
-      accessMsg.style.color = "red";
-      return;
-    }
+  const csvData = localStorage.getItem("jornadaCSV");
+  const acumulado = localStorage.getItem("acumuladoJornada") || "No definido";
 
-    // Verificar si ya usó el código
-    if (localStorage.getItem(`codigo_${userCode}_usado`)) {
-      accessMsg.textContent = "Este código ya fue utilizado.";
-      accessMsg.style.color = "red";
-      return;
-    }
+  if (!csvData) {
+    matchesContainer.innerHTML = "<p>No hay datos de jornada cargados.</p>";
+    return;
+  }
 
-    mostrarFormulario();
+  // Convertir CSV a lista de partidos
+  const lines = csvData.split("\n").filter((l) => l.trim() !== "");
+  const partidos = lines.slice(1).map((line) => {
+    const [id, equipo1, equipo2] = line.split(",");
+    return { id, equipo1, equipo2 };
   });
 
-  // --- Mostrar formulario con partidos dinámicos ---
-  function mostrarFormulario() {
-    jornadaCard.style.display = "block";
-    matchesContainer.innerHTML = "";
+  // Mostrar acumulado
+  document.getElementById("acumuladoText").textContent = `💰 Premio: $${acumulado}`;
 
-    jornadaActiva.forEach((partido, index) => {
-      const matchDiv = document.createElement("div");
-      matchDiv.classList.add("ma
+  // Crear inputs para cada partido
+  matchesContainer.innerHTML = "";
+  partidos.forEach((p, index) => {
+    const div = document.createElement("div");
+    div.classList.add("match-row");
+    div.innerHTML = `
+      <p><b>${p.equipo1}</b> vs <b>${p.equipo2}</b></p>
+      <input type="number" id="eq1_${index}" placeholder="Goles ${p.equipo1}" min="0">
+      <input type="number" id="eq2_${index}" placeholder="Goles ${p.equipo2}" min="0">
+    `;
+    matchesContainer.appendChild(div);
+  });
 
+  // Guardar código del jugador
+  document.getElementById("playerCodeHidden").value = code;
+}
+
+// Enviar pronóstico (solo demostrativo)
+pronForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const code = document.getElementById("playerCodeHidden").value;
+  localStorage.removeItem("jornadaActiva"); // Desactiva el código una vez enviado
+
+  alert(`✅ Pronóstico del código ${code} enviado correctamente.`);
+  window.location.href = "/";
+});
