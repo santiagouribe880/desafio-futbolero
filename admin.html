@@ -1,80 +1,30 @@
-<div id="adminPanel" style="display:none;">
-  <h2>Configuración de Jornada</h2>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Administrador - Desafío Futbolero</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="admin-container">
+    <h1>⚽ Panel Administrador - Desafío Futbolero</h1>
 
-  <label for="csvFile">Subir archivo CSV:</label>
-  <input type="file" id="csvFile" accept=".csv" /><br><br>
+    <div id="loginSection">
+      <input type="password" id="adminPass" placeholder="Clave de administrador">
+      <button id="loginBtn">Ingresar</button>
+    </div>
 
-  <label for="acumulado">Acumulado de esta jornada:</label>
-  <input type="number" id="acumulado" /><br><br>
+    <div id="adminPanel" style="display:none;">
+      <h2>Gestión de Jornada</h2>
+      <input type="file" id="csvFile" accept=".csv">
+      <input type="number" id="acumulado" placeholder="Acumulado ($)">
+      <button id="uploadBtn">Activar jornada</button>
+      <p id="adminMsg"></p>
+    </div>
+  </div>
 
-  <button id="guardarBtn">Guardar Configuración</button>
-  <button id="activarBtn" style="display:none;">Activar Jornada</button>
-  <p id="adminMsg"></p>
+  <script src="admin.js"></script>
+</body>
+</html>
 
-  <hr>
-  <h3>Vista previa:</h3>
-  <table id="previewTable" border="1" style="display:none;">
-    <thead>
-      <tr><th>Código</th><th>Partido</th><th>Local</th><th>Visitante</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<script>
-const adminPassword = "admin123";
-let csvData = [];
-
-document.getElementById("loginBtn").addEventListener("click", () => {
-  const pass = document.getElementById("adminPass").value;
-  const msg = document.getElementById("loginMsg");
-  if (pass === adminPassword) {
-    document.getElementById("adminLogin").style.display = "none";
-    document.getElementById("adminPanel").style.display = "block";
-  } else {
-    msg.textContent = "Clave incorrecta.";
-  }
-});
-
-document.getElementById("csvFile").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    const lines = event.target.result.split("\n").slice(1); // saltar encabezado
-    const tbody = document.querySelector("#previewTable tbody");
-    tbody.innerHTML = "";
-    csvData = [];
-
-    lines.forEach(line => {
-      const [codigo, partido, local, visitante] = line.split(",");
-      if (!codigo) return;
-      csvData.push({ codigo, partido, local, visitante });
-      const row = `<tr><td>${codigo}</td><td>${partido}</td><td>${local}</td><td>${visitante}</td></tr>`;
-      tbody.insertAdjacentHTML("beforeend", row);
-    });
-
-    document.getElementById("previewTable").style.display = "table";
-    document.getElementById("activarBtn").style.display = "inline-block";
-  };
-  reader.readAsText(file);
-});
-
-document.getElementById("guardarBtn").addEventListener("click", () => {
-  const acumulado = document.getElementById("acumulado").value;
-  document.getElementById("adminMsg").textContent = 
-    `Configuración guardada correctamente. Acumulado: ${acumulado}`;
-});
-
-document.getElementById("activarBtn").addEventListener("click", () => {
-  if (csvData.length === 0) {
-    alert("Primero debes cargar un archivo CSV válido.");
-    return;
-  }
-
-  // Guardar jornada activa en localStorage (visible para todos)
-  localStorage.setItem("jornadaActiva", JSON.stringify(csvData));
-  alert("✅ Jornada activada correctamente. Los jugadores ya pueden ingresar.");
-});
-</script>
