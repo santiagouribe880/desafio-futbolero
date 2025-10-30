@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administrador - Desafío Futbolero</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Panel de Administración</h1>
+    <div id="adminLogin">
+      <label for="adminPass">Clave de acceso:</label>
+      <input type="password" id="adminPass" placeholder="Ingresa tu clave" />
+      <button id="loginBtn">Ingresar</button>
+      <p id="loginMsg"></p>
+    </div>
+
+    <div id="adminPanel" style="display:none;">
+      <h2>Configuración de Jornada</h2>
+      <label for="csvFile">Subir archivo CSV:</label>
+      <input type="file" id="csvFile" accept=".csv" /><br><br>
+      <label for="acumulado">Acumulado de esta jornada:</label>
+      <input type="number" id="acumulado" /><br><br>
+      <button id="guardarBtn">Guardar Configuración</button>
+      <p id="adminMsg"></p>
+    </div>
+  </div>
+
+  <script>
+    const adminPassword = "admin123";
+
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const pass = document.getElementById("adminPass").value;
+      const msg = document.getElementById("loginMsg");
+
+      if (pass === adminPassword) {
+        document.getElementById("adminLogin").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+      } else {
+        msg.textContent = "Clave incorrecta.";
+      }
+    });
+
+    document.getElementById("guardarBtn").addEventListener("click", () => {
+      const acumulado = document.getElementById("acumulado").value;
+      document.getElementById("adminMsg").textContent = 
+        `Configuración guardada correctamente. Acumulado: ${acumulado}`;
+    });
+  </script>
+</body>
+</html>
