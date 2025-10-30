@@ -3,44 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - Desafío Futbolero</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Panel Administrador | Desafío Futbolero</title>
+  <link rel="icon" href="⚽" type="image/png">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #003366, #0099cc);
+      color: #fff;
+      text-align: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      margin-top: 40px;
+      font-size: 2rem;
+      letter-spacing: 1px;
+    }
+    #loginBox, #adminPanel {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(6px);
+      padding: 25px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+      margin: 40px auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    input, button {
+      width: 90%;
+      margin: 10px 0;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    input {
+      background: #fff;
+      color: #000;
+    }
+    button {
+      background: #00cc66;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #00b359;
+      transform: scale(1.05);
+    }
+    #loginMsg, #adminMsg {
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+    hr {
+      border: 1px solid rgba(255,255,255,0.2);
+      margin: 20px 0;
+    }
+    .note {
+      font-size: 0.85rem;
+      color: #ffeb3b;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>⚙️ Panel Administrador</h1>
-  </header>
+  <h1>⚽ Panel Administrador</h1>
 
-  <main id="admin-panel">
-    <section id="login-section">
-      <h2>Ingreso Administrador</h2>
-      <input type="password" id="admin-pass" placeholder="Contraseña">
-      <button id="btn-login">Entrar</button>
-      <p id="login-msg"></p>
-    </section>
+  <!-- Caja de inicio de sesión -->
+  <div id="loginBox">
+    <input type="password" id="adminKey" placeholder="Contraseña de administrador">
+    <button id="loginBtn" type="button">Ingresar</button>
+    <p id="loginMsg"></p>
+  </div>
 
-    <section id="config-section" style="display:none;">
-      <h2>Configuración de Jornada</h2>
+  <!-- Panel del administrador -->
+  <div id="adminPanel" style="display:none;">
+    <h2>⚙️ Configuración de Jornada</h2>
 
-      <label>🏆 Premio de la jornada:</label>
-      <input type="text" id="premio" placeholder="Ej: $200.000">
+    <input type="file" id="csvFile" accept=".csv">
+    <button id="uploadCsvBtn" type="button">Cargar CSV</button>
 
-      <label>⏰ Hora límite (hora Colombia):</label>
-      <input type="datetime-local" id="hora-limite-input">
+    <hr>
 
-      <div>
-        <button id="btn-activar">✅ Activar Jornada</button>
-        <button id="btn-desactivar">🚫 Desactivar Jornada</button>
-      </div>
+    <label>💰 Premio acumulado:</label>
+    <input type="text" id="acumuladoInput" placeholder="Ej: 100000">
+    <button id="saveAcumuladoBtn" type="button">Guardar premio</button>
 
-      <p id="estado"></p>
-    </section>
-  </main>
+    <hr>
 
-  <footer>
-    <p>© 2025 Desafío Futbolero | Panel de Administración</p>
-  </footer>
+    <button id="activarJornadaBtn" type="button">🏁 Activar jornada</button>
 
-  <script src="main.js"></script>
+    <p class="note">⏰ Recuerda: cuando haya varios ganadores, el premio se divide por partes iguales.</p>
+
+    <p id="adminMsg"></p>
+  </div>
+
+  <script src="admin.js"></script>
 </body>
 </html>
