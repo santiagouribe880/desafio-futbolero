@@ -1,68 +1,57 @@
-// --- CONFIGURACIÓN --- //
-const ADMIN_PASSWORD = "futbol2025"; // Clave del administrador
+// admin.js - versión que guarda todo lo que necesita main.js
+(() => {
+  const ADMIN_PASSWORD = "futbol2025"; // o cámbiala si quieres
+  // elementos
+  const loginBox = document.getElementById("loginBox");
+  const loginBtn = document.getElementById("loginBtn");
+  const adminKey = document.getElementById("adminKey");
+  const loginMsg = document.getElementById("loginMsg");
+  const adminPanel = document.getElementById("adminPanel");
+  const csvFileInput = document.getElementById("csvFile");
+  const uploadCsvBtn = document.getElementById("uploadCsvBtn");
+  const acumuladoInput = document.getElementById("acumuladoInput");
+  const saveAcumuladoBtn = document.getElementById("saveAcumuladoBtn");
+  const activarJornadaBtn = document.getElementById("activarJornadaBtn");
+  const adminMsg = document.getElementById("adminMsg");
 
-// Elementos
-const loginBox = document.getElementById("loginBox");
-const loginBtn = document.getElementById("loginBtn");
-const adminKey = document.getElementById("adminKey");
-const loginMsg = document.getElementById("loginMsg");
+  loginBtn.addEventListener('click', () => {
+    if ((adminKey.value || '').trim() === ADMIN_PASSWORD) {
+      loginBox.style.display = 'none';
+      adminPanel.style.display = 'block';
+      loginMsg.textContent = '';
+    } else {
+      loginMsg.textContent = '❌ Contraseña incorrecta';
+    }
+  });
 
-const adminPanel = document.getElementById("adminPanel");
-const uploadCsvBtn = document.getElementById("uploadCsvBtn");
-const csvFileInput = document.getElementById("csvFile");
-const saveAcumuladoBtn = document.getElementById("saveAcumuladoBtn");
-const acumuladoInput = document.getElementById("acumuladoInput");
-const activarJornadaBtn = document.getElementById("activarJornadaBtn");
-const adminMsg = document.getElementById("adminMsg");
+  // cargar CSV en localStorage
+  uploadCsvBtn.addEventListener('click', () => {
+    const f = csvFileInput.files[0];
+    if (!f) { alert('Selecciona un CSV'); return; }
+    const r = new FileReader();
+    r.onload = (e) => {
+      const txt = e.target.result;
+      // guardar raw CSV
+      localStorage.setItem('jornadaCSV', txt);
+      adminMsg.textContent = '✅ CSV cargado (guardado temporal en localStorage).';
+    };
+    r.readAsText(f, 'utf-8');
+  });
 
-// --- LOGIN ADMIN --- //
-loginBtn.addEventListener("click", () => {
-  const key = adminKey.value.trim();
-  if (key === ADMIN_PASSWORD) {
-    loginBox.style.display = "none";
-    adminPanel.style.display = "block";
-    loginMsg.textContent = "";
-  } else {
-    loginMsg.textContent = "❌ Contraseña incorrecta.";
-  }
-});
+  // guardar acumulado
+  saveAcumuladoBtn.addEventListener('click', () => {
+    const v = (acumuladoInput.value || '').trim();
+    if (!v) { alert('Ingresa un valor de acumulado'); return; }
+    localStorage.setItem('acumuladoJornada', v);
+    adminMsg.textContent = `💰 Acumulado guardado: ${v}`;
+  });
 
-// --- SUBIR ARCHIVO CSV --- //
-uploadCsvBtn.addEventListener("click", () => {
-  const file = csvFileInput.files[0];
-  if (!file) {
-    alert("Por favor selecciona un archivo CSV primero.");
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    const csvContent = e.target.result;
-    localStorage.setItem("jornadaCSV", csvContent);
-    adminMsg.textContent = "✅ Archivo CSV cargado correctamente.";
-  };
-  reader.readAsText(file);
-});
-
-// --- GUARDAR ACUMULADO --- //
-saveAcumuladoBtn.addEventListener("click", () => {
-  const acumulado = acumuladoInput.value;
-  if (!acumulado || acumulado <= 0) {
-    alert("Por favor ingresa un valor válido para el acumulado.");
-    return;
-  }
-  localStorage.setItem("acumuladoJornada", acumulado);
-  adminMsg.textContent = `💰 Acumulado guardado: $${acumulado}`;
-});
-
-// --- ACTIVAR JORNADA --- //
-activarJornadaBtn.addEventListener("click", () => {
-  const jornadaData = localStorage.getItem("jornadaCSV");
-  if (!jornadaData) {
-    alert("Primero carga un archivo CSV para activar la jornada.");
-    return;
-  }
-
-  localStorage.setItem("jornadaActiva", "true");
-  adminMsg.textContent = "⚽ Jornada activada con éxito.";
-});
+  // activar jornada (marca activo y comprueba que CSV exista)
+  activarJornadaBtn.addEventListener('click', () => {
+    const csv = localStorage.getItem('jornadaCSV');
+    if (!csv) { alert('Primero carga un CSV'); return; }
+    // marca que la jornada está activa
+    localStorage.setItem('jornadaActiva', 'true');
+    adminMsg.textContent = '⚽ Jornada activada con éxito.';
+  });
+})();
