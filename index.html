@@ -1,44 +1,29 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Desafío Futbolero</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafío Futbolero</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Desafío Futbolero</h1>
-  </header>
+    <div class="container">
+        <h1>Desafío Futbolero</h1>
 
-  <main>
-    <!-- Sección de ingreso de código -->
-    <section class="login-section" id="loginSection">
-      <h2>Ingresa tu código de participación:</h2>
-      <div class="login-box">
-        <input type="text" id="codeInput" placeholder="Código único" />
-        <button id="validateBtn">Ingresar</button>
-      </div>
-      <p id="accessMsg" class="msg"></p>
-    </section>
+        <div id="login-section">
+            <p><strong>Ingresa tu código de participación:</strong></p>
+            <input type="text" id="codigoInput" placeholder="Código único">
+            <button onclick="validarCodigo()">Ingresar</button>
+            <p id="estadoJornada"></p>
+        </div>
 
-    <!-- Sección visible cuando la jornada está activa -->
-    <section id="jornadaCard" class="hidden">
-      <h2>Pronostica los partidos</h2>
-      <p id="acumuladoText" class="acumulado"></p>
+        <div id="pronostico-section" style="display:none;">
+            <h2>Pronostica los partidos</h2>
+            <form id="formPronostico"></form>
+            <button id="enviarPronostico" onclick="enviarPronostico()">Enviar Pronóstico</button>
+        </div>
+    </div>
 
-      <form id="pronForm">
-        <div id="matchesContainer" class="matches"></div>
-        <input type="hidden" id="playerCodeHidden" />
-        <button type="submit" class="btn-enviar">Enviar Pronóstico</button>
-      </form>
-    </section>
-  </main>
-
-  <footer>
-    <p>© 2025 Desafío Futbolero</p>
-  </footer>
-
-  <script src="main.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
