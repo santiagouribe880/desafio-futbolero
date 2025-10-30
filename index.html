@@ -1,40 +1,118 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Desafío Futbolero</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desafío Futbolero ⚽</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #002b80, #0059b3);
+      color: #fff;
+      text-align: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.2em;
+    }
+
+    p {
+      margin-top: 0;
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 20px;
+      width: 90%;
+      max-width: 450px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      backdrop-filter: blur(6px);
+    }
+
+    input, button {
+      width: 90%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      margin: 8px 0;
+      font-size: 1rem;
+    }
+
+    input {
+      background: #fff;
+      color: #000;
+    }
+
+    button {
+      background: #00b300;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #00e600;
+    }
+
+    #partidos {
+      margin-top: 20px;
+      text-align: left;
+      width: 100%;
+    }
+
+    .partido {
+      background: rgba(255,255,255,0.15);
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .partido input {
+      width: 45px;
+      text-align: center;
+    }
+
+    .note {
+      font-size: 0.9rem;
+      margin-top: 20px;
+      color: #ffd700;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>⚽ Desafío Futbolero</h1>
-    <h3 id="premio-jornada">🏆 Premio: por definir</h3>
-    <p id="hora-limite">⏰ Hora límite: No definida</p>
-    <p id="observacion">⚠️ En caso de existir varios ganadores, el premio se dividirá en partes iguales entre ellos.</p>
-    <div id="contador"></div>
-  </header>
+  <div class="card">
+    <h1>Desafío Futbolero ⚽</h1>
+    <p>Ingresa tu código para realizar tus pronósticos</p>
 
-  <main>
-    <section id="ingreso-codigo">
-      <h2>Ingresa tu código para participar</h2>
-      <input type="text" id="codigo" placeholder="Código único" />
-      <button id="btn-ingresar">Ingresar</button>
-      <p id="mensaje"></p>
-    </section>
+    <div id="ingresoCodigo">
+      <input type="text" id="codigoInput" placeholder="Código de participante">
+      <button id="validarCodigoBtn">Ingresar</button>
+      <p id="codigoMsg" style="color: #ffb3b3;"></p>
+    </div>
 
-    <section id="formulario-pronosticos" style="display:none;">
-      <h2>Tus pronósticos</h2>
-      <form id="form-pronosticos">
-        <div id="partidos-container"></div>
-        <button type="submit">Enviar Pronósticos</button>
-      </form>
-    </section>
-  </main>
-
-  <footer>
-    <p>© 2025 Desafío Futbolero | Todos los derechos reservados</p>
-  </footer>
+    <div id="zonaPronosticos" style="display:none;">
+      <h2>Jornada activa</h2>
+      <div id="infoJornada"></div>
+      <div id="partidos"></div>
+      <button id="enviarPronosticosBtn">Enviar pronósticos</button>
+      <p class="note">💰 En caso de varios ganadores, el premio se divide en partes iguales.</p>
+    </div>
+  </div>
 
   <script src="main.js"></script>
 </body>
