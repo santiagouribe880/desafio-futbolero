@@ -1,29 +1,41 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desafío Futbolero</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Desafío Futbolero</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="container">
-        <h1>Desafío Futbolero</h1>
+  <header>
+    <h1>⚽ Desafío Futbolero</h1>
+    <h3 id="premio-jornada">🏆 Premio: por definir</h3>
+    <p id="hora-limite">⏰ Hora límite: No definida</p>
+    <p id="observacion">⚠️ En caso de existir varios ganadores, el premio se dividirá en partes iguales entre ellos.</p>
+    <div id="contador"></div>
+  </header>
 
-        <div id="login-section">
-            <p><strong>Ingresa tu código de participación:</strong></p>
-            <input type="text" id="codigoInput" placeholder="Código único">
-            <button onclick="validarCodigo()">Ingresar</button>
-            <p id="estadoJornada"></p>
-        </div>
+  <main>
+    <section id="ingreso-codigo">
+      <h2>Ingresa tu código para participar</h2>
+      <input type="text" id="codigo" placeholder="Código único" />
+      <button id="btn-ingresar">Ingresar</button>
+      <p id="mensaje"></p>
+    </section>
 
-        <div id="pronostico-section" style="display:none;">
-            <h2>Pronostica los partidos</h2>
-            <form id="formPronostico"></form>
-            <button id="enviarPronostico" onclick="enviarPronostico()">Enviar Pronóstico</button>
-        </div>
-    </div>
+    <section id="formulario-pronosticos" style="display:none;">
+      <h2>Tus pronósticos</h2>
+      <form id="form-pronosticos">
+        <div id="partidos-container"></div>
+        <button type="submit">Enviar Pronósticos</button>
+      </form>
+    </section>
+  </main>
 
-    <script src="main.js"></script>
+  <footer>
+    <p>© 2025 Desafío Futbolero | Todos los derechos reservados</p>
+  </footer>
+
+  <script src="main.js"></script>
 </body>
 </html>
