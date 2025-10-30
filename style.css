@@ -1,0 +1,45 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(180deg, #004d00, #002200);
+  color: white;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+header {
+  background: #006600;
+  padding: 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+main {
+  padding: 1.5rem;
+}
+
+input, button {
+  margin: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: none;
+}
+
+button {
+  background: #00cc00;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #009900;
+}
+
+.hidden {
+  display: none;
+}
+
+footer {
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
