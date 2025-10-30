@@ -65,6 +65,13 @@
       font-size: 0.85rem;
       color: #ffeb3b;
     }
+    label {
+      display: block;
+      text-align: left;
+      margin-left: 5%;
+      font-size: 0.95rem;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -81,24 +88,74 @@
   <div id="adminPanel" style="display:none;">
     <h2>⚙️ Configuración de Jornada</h2>
 
-    <input type="file" id="csvFile" accept=".csv">
-    <button id="uploadCsvBtn" type="button">Cargar CSV</button>
-
-    <hr>
-
     <label>💰 Premio acumulado:</label>
     <input type="text" id="acumuladoInput" placeholder="Ej: 100000">
     <button id="saveAcumuladoBtn" type="button">Guardar premio</button>
 
     <hr>
 
+    <label>⏰ Hora límite (hora Colombia):</label>
+    <input type="datetime-local" id="horaLimiteInput">
+    <button id="guardarHoraBtn" type="button">Guardar hora límite</button>
+
+    <hr>
+
     <button id="activarJornadaBtn" type="button">🏁 Activar jornada</button>
 
-    <p class="note">⏰ Recuerda: cuando haya varios ganadores, el premio se divide por partes iguales.</p>
+    <p class="note">⚠️ En caso de que existan varios ganadores, el premio se dividirá en partes iguales.</p>
 
     <p id="adminMsg"></p>
   </div>
 
-  <script src="admin.js"></script>
+  <script>
+    (() => {
+      const ADMIN_PASSWORD = "futbol2025";
+
+      const loginBox = document.getElementById("loginBox");
+      const loginBtn = document.getElementById("loginBtn");
+      const adminKey = document.getElementById("adminKey");
+      const loginMsg = document.getElementById("loginMsg");
+      const adminPanel = document.getElementById("adminPanel");
+      const acumuladoInput = document.getElementById("acumuladoInput");
+      const saveAcumuladoBtn = document.getElementById("saveAcumuladoBtn");
+      const activarJornadaBtn = document.getElementById("activarJornadaBtn");
+      const adminMsg = document.getElementById("adminMsg");
+      const horaLimiteInput = document.getElementById("horaLimiteInput");
+      const guardarHoraBtn = document.getElementById("guardarHoraBtn");
+
+      // Ingreso al panel
+      loginBtn.addEventListener("click", () => {
+        if ((adminKey.value || "").trim() === ADMIN_PASSWORD) {
+          loginBox.style.display = "none";
+          adminPanel.style.display = "block";
+          loginMsg.textContent = "";
+        } else {
+          loginMsg.textContent = "❌ Contraseña incorrecta";
+        }
+      });
+
+      // Guardar premio
+      saveAcumuladoBtn.addEventListener("click", () => {
+        const v = (acumuladoInput.value || "").trim();
+        if (!v) { alert("Ingresa un valor de acumulado"); return; }
+        localStorage.setItem("acumuladoJornada", v);
+        adminMsg.textContent = `💰 Premio guardado: ${v}`;
+      });
+
+      // Guardar hora límite
+      guardarHoraBtn.addEventListener("click", () => {
+        const h = horaLimiteInput.value;
+        if (!h) { alert("Selecciona una hora límite"); return; }
+        localStorage.setItem("horaLimiteJornada", h);
+        adminMsg.textContent = `🕒 Hora límite guardada: ${new Date(h).toLocaleString("es-CO", { timeZone: "America/Bogota" })}`;
+      });
+
+      // Activar jornada
+      activarJornadaBtn.addEventListener("click", () => {
+        localStorage.setItem("jornadaActiva", "true");
+        adminMsg.textContent = "✅ Jornada activada con éxito.";
+      });
+    })();
+  </script>
 </body>
 </html>
