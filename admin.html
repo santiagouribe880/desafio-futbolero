@@ -1,52 +1,80 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Administrador - Desafío Futbolero</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div class="container">
-    <h1>Panel de Administración</h1>
-    <div id="adminLogin">
-      <label for="adminPass">Clave de acceso:</label>
-      <input type="password" id="adminPass" placeholder="Ingresa tu clave" />
-      <button id="loginBtn">Ingresar</button>
-      <p id="loginMsg"></p>
-    </div>
+<div id="adminPanel" style="display:none;">
+  <h2>Configuración de Jornada</h2>
 
-    <div id="adminPanel" style="display:none;">
-      <h2>Configuración de Jornada</h2>
-      <label for="csvFile">Subir archivo CSV:</label>
-      <input type="file" id="csvFile" accept=".csv" /><br><br>
-      <label for="acumulado">Acumulado de esta jornada:</label>
-      <input type="number" id="acumulado" /><br><br>
-      <button id="guardarBtn">Guardar Configuración</button>
-      <p id="adminMsg"></p>
-    </div>
-  </div>
+  <label for="csvFile">Subir archivo CSV:</label>
+  <input type="file" id="csvFile" accept=".csv" /><br><br>
 
-  <script>
-    const adminPassword = "admin123";
+  <label for="acumulado">Acumulado de esta jornada:</label>
+  <input type="number" id="acumulado" /><br><br>
 
-    document.getElementById("loginBtn").addEventListener("click", () => {
-      const pass = document.getElementById("adminPass").value;
-      const msg = document.getElementById("loginMsg");
+  <button id="guardarBtn">Guardar Configuración</button>
+  <button id="activarBtn" style="display:none;">Activar Jornada</button>
+  <p id="adminMsg"></p>
 
-      if (pass === adminPassword) {
-        document.getElementById("adminLogin").style.display = "none";
-        document.getElementById("adminPanel").style.display = "block";
-      } else {
-        msg.textContent = "Clave incorrecta.";
-      }
+  <hr>
+  <h3>Vista previa:</h3>
+  <table id="previewTable" border="1" style="display:none;">
+    <thead>
+      <tr><th>Código</th><th>Partido</th><th>Local</th><th>Visitante</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+const adminPassword = "admin123";
+let csvData = [];
+
+document.getElementById("loginBtn").addEventListener("click", () => {
+  const pass = document.getElementById("adminPass").value;
+  const msg = document.getElementById("loginMsg");
+  if (pass === adminPassword) {
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("adminPanel").style.display = "block";
+  } else {
+    msg.textContent = "Clave incorrecta.";
+  }
+});
+
+document.getElementById("csvFile").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const lines = event.target.result.split("\n").slice(1); // saltar encabezado
+    const tbody = document.querySelector("#previewTable tbody");
+    tbody.innerHTML = "";
+    csvData = [];
+
+    lines.forEach(line => {
+      const [codigo, partido, local, visitante] = line.split(",");
+      if (!codigo) return;
+      csvData.push({ codigo, partido, local, visitante });
+      const row = `<tr><td>${codigo}</td><td>${partido}</td><td>${local}</td><td>${visitante}</td></tr>`;
+      tbody.insertAdjacentHTML("beforeend", row);
     });
 
-    document.getElementById("guardarBtn").addEventListener("click", () => {
-      const acumulado = document.getElementById("acumulado").value;
-      document.getElementById("adminMsg").textContent = 
-        `Configuración guardada correctamente. Acumulado: ${acumulado}`;
-    });
-  </script>
-</body>
-</html>
+    document.getElementById("previewTable").style.display = "table";
+    document.getElementById("activarBtn").style.display = "inline-block";
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById("guardarBtn").addEventListener("click", () => {
+  const acumulado = document.getElementById("acumulado").value;
+  document.getElementById("adminMsg").textContent = 
+    `Configuración guardada correctamente. Acumulado: ${acumulado}`;
+});
+
+document.getElementById("activarBtn").addEventListener("click", () => {
+  if (csvData.length === 0) {
+    alert("Primero debes cargar un archivo CSV válido.");
+    return;
+  }
+
+  // Guardar jornada activa en localStorage (visible para todos)
+  localStorage.setItem("jornadaActiva", JSON.stringify(csvData));
+  alert("✅ Jornada activada correctamente. Los jugadores ya pueden ingresar.");
+});
+</script>
