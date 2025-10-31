@@ -1,4 +1,5 @@
-codigo;nombre
-A006;Santiago Uribe
-A007;Juan Pablo Uribe
-A008;David Uribe
+codigo,nombre
+A006,Santiago Uribe
+A007,Juan Pablo Uribe
+A008,David Uribe
+
