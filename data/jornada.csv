@@ -1,4 +1,5 @@
-partido	equipo_local	equipo_visitante
-Partido 1	Nacional	Medellin
-Partido 2	Millonarios	Santafe
-Partido 3	Cali	Tolima
+jornada,partido,equipo_local,equipo_visitante,fecha
+1,Partido 1,Nacional,Medellin,2025-10-30
+1,Partido 2,Millonarios,Santafe,2025-10-30
+1,Partido 3,Cali,Tolima,2025-10-30
+1,Partido 4,América,Bucaramanga,2025-10-30
