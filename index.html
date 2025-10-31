@@ -1,119 +1,78 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Desafío Futbolero ⚽</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #002b80, #0059b3);
-      color: #fff;
-      text-align: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.2em;
-    }
-
-    p {
-      margin-top: 0;
-      font-size: 1.1rem;
-      opacity: 0.9;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 15px;
-      padding: 20px;
-      width: 90%;
-      max-width: 450px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      backdrop-filter: blur(6px);
-    }
-
-    input, button {
-      width: 90%;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      margin: 8px 0;
-      font-size: 1rem;
-    }
-
-    input {
-      background: #fff;
-      color: #000;
-    }
-
-    button {
-      background: #00b300;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    button:hover {
-      background: #00e600;
-    }
-
-    #partidos {
-      margin-top: 20px;
-      text-align: left;
-      width: 100%;
-    }
-
-    .partido {
-      background: rgba(255,255,255,0.15);
-      padding: 10px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .partido input {
-      width: 45px;
-      text-align: center;
-    }
-
-    .note {
-      font-size: 0.9rem;
-      margin-top: 20px;
-      color: #ffd700;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Desafío Futbolero - Ingreso</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="card">
-    <h1>Desafío Futbolero ⚽</h1>
-    <p>Ingresa tu código para realizar tus pronósticos</p>
 
-    <div id="ingresoCodigo">
-      <input type="text" id="codigoInput" placeholder="Código de participante">
-      <button id="validarCodigoBtn">Ingresar</button>
-      <p id="codigoMsg" style="color: #ffb3b3;"></p>
-    </div>
+  <div class="container">
+    <h1>⚽ Desafío Futbolero</h1>
+    <p>Ingresa tu código de participante para acceder a la jornada actual.</p>
 
-    <div id="zonaPronosticos" style="display:none;">
-      <h2>Jornada activa</h2>
-      <div id="infoJornada"></div>
-      <div id="partidos"></div>
-      <button id="enviarPronosticosBtn">Enviar pronósticos</button>
-      <p class="note">💰 En caso de varios ganadores, el premio se divide en partes iguales.</p>
-    </div>
+    <input id="codigoInput" type="text" placeholder="Ingrese su código" />
+    <button id="btnIngresar">Ingresar</button>
+
+    <p id="mensaje" class="mensaje"></p>
   </div>
 
-  <script src="main.js"></script>
+  <script>
+    // URL al archivo CSV con los códigos válidos
+    const urlCodigos = "https://raw.githubusercontent.com/santiagouribe880/desafio-futbolero/main/data/codigos.csv";
+
+    // Función para validar el código ingresado
+    async function validarCodigoParticipante(codigoIngresado) {
+      try {
+        const response = await fetch(urlCodigos);
+        const data = await response.text();
+
+        const lineas = data.trim().split("\n");
+        const encabezados = lineas[0].split(",");
+        const registros = lineas.slice(1).map(linea => {
+          const valores = linea.split(",");
+          let obj = {};
+          encabezados.forEach((h, i) => obj[h.trim()] = valores[i]?.trim());
+          return obj;
+        });
+
+        // Validar si el código existe
+        return registros.some(r => r.codigo === codigoIngresado);
+      } catch (error) {
+        console.error("Error cargando códigos:", error);
+        return false;
+      }
+    }
+
+    // Evento al presionar el botón de ingreso
+    document.getElementById("btnIngresar").addEventListener("click", async () => {
+      const codigo = document.getElementById("codigoInput").value.trim();
+      const mensaje = document.getElementById("mensaje");
+
+      if (codigo === "") {
+        mensaje.textContent = "Por favor ingresa un código válido.";
+        mensaje.style.color = "red";
+        return;
+      }
+
+      mensaje.textContent = "Verificando código...";
+      mensaje.style.color = "black";
+
+      const valido = await validarCodigoParticipante(codigo);
+
+      if (valido) {
+        mensaje.textContent = "Código válido. Redirigiendo...";
+        mensaje.style.color = "green";
+        setTimeout(() => {
+          window.location.href = `main.html?codigo=${codigo}`;
+        }, 1000);
+      } else {
+        mensaje.textContent = "Código inválido. Verifica e intenta nuevamente.";
+        mensaje.style.color = "red";
+      }
+    });
+  </script>
+
 </body>
 </html>
