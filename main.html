@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Desafío Futbolero - Pronósticos</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <h1>⚽ Desafío Futbolero</h1>
+    <p id="saludoParticipante"></p>
+
+    <h2>Jornada Actual</h2>
+    <div id="partidosContainer" class="partidos-container">
+      <p>Cargando partidos...</p>
+    </div>
+
+    <button id="btnSalir" class="btn-salir">Cerrar sesión</button>
+  </div>
+
+  <script src="main.js"></script>
+  <script>
+    document.getElementById("btnSalir").addEventListener("click", () => {
+      window.location.href = "index.html";
+    });
+  </script>
+
+</body>
+</html>
