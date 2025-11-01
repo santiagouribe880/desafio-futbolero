@@ -1,59 +1,69 @@
-// URL al CSV con las jornadas
-const urlJornadas = "https://raw.githubusercontent.com/santiagouribe880/desafio-futbolero/main/data/jornadas.csv";
+// === CONFIGURACIÓN ===
+const baseURL = "https://raw.githubusercontent.com/santiagouribe880/desafio-futbolero/main/data/jornada.csv";
 
-// Variable para definir la jornada activa (se puede automatizar luego desde admin)
-let jornadaActiva = 1;
-
-// Obtener código del participante desde la URL
-const params = new URLSearchParams(window.location.search);
-const codigo = params.get("codigo");
-
-// Mostrar saludo con el código del participante
-document.addEventListener("DOMContentLoaded", () => {
-  const saludo = document.getElementById("saludoParticipante");
-  if (saludo && codigo) {
-    saludo.textContent = `Bienvenido al Desafío Futbolero, código: ${codigo}`;
-  }
-  cargarPartidos();
-});
-
-// Cargar los partidos desde GitHub
-async function cargarPartidos() {
+// === FUNCIÓN PRINCIPAL ===
+async function cargarJornadaActiva() {
   try {
-    const response = await fetch(urlJornadas);
-    const data = await response.text();
+    // Agregamos un número aleatorio para evitar cache de GitHub
+    const urlCSV = `${baseURL}?v=${Date.now()}`;
+    const response = await fetch(urlCSV, { cache: "no-store" });
+    if (!response.ok) throw new Error("No se pudo acceder a jornada.csv");
 
-    const lineas = data.trim().split("\n");
-    const encabezados = lineas[0].split(",");
-    const partidos = lineas.slice(1).map(linea => {
-      const valores = linea.split(",");
-      let obj = {};
-      encabezados.forEach((h, i) => obj[h.trim()] = valores[i]?.trim());
-      return obj;
+    const csvText = await response.text();
+    const filas = csvText.trim().split("\n");
+    const encabezados = filas.shift().split(",");
+
+    const jornadas = filas.map(fila => {
+      const columnas = fila.split(",");
+      return encabezados.reduce((obj, key, i) => {
+        obj[key.trim()] = columnas[i] ? columnas[i].trim() : "";
+        return obj;
+      }, {});
     });
 
-    // Filtrar solo la jornada activa
-    const partidosFiltrados = partidos.filter(p => p.jornada == jornadaActiva);
+    // Filtrar jornadas activas
+    const jornadasActivas = jornadas.filter(j => j.activa?.toLowerCase() === "true");
 
-    // Mostrar partidos sin modificar el diseño actual
-    const contenedor = document.getElementById("partidosContainer");
-    contenedor.innerHTML = "";
-
-    if (partidosFiltrados.length === 0) {
-      contenedor.innerHTML = "<p>No hay partidos disponibles para la jornada actual.</p>";
+    if (jornadasActivas.length === 0) {
+      mostrarMensaje("⚽ No hay jornada activa actualmente. ¡Vuelve más tarde!");
       return;
     }
 
-    partidosFiltrados.forEach(p => {
-      contenedor.innerHTML += `
-        <div class="partido">
-          <span>${p.equipo_local}</span> vs <span>${p.equipo_visitante}</span>
-        </div>
-      `;
-    });
+    // Tomar la jornada activa más reciente
+    const jornadaActual = jornadasActivas[jornadasActivas.length - 1];
+    mostrarPartidos(jornadaActual);
+
   } catch (error) {
-    console.error("Error cargando partidos:", error);
-    const contenedor = document.getElementById("partidosContainer");
-    contenedor.innerHTML = "<p>Error cargando los partidos. Intenta más tarde.</p>";
+    console.error("Error al cargar la jornada:", error);
+    mostrarMensaje("⚠️ Error al cargar la jornada. Intenta nuevamente más tarde.");
   }
 }
+
+// === FUNCIONES AUXILIARES ===
+function mostrarPartidos(jornada) {
+  const contenedor = document.getElementById("partidos-container");
+  contenedor.innerHTML = "";
+
+  const nombreJornada = jornada.nombre || "Jornada activa";
+  const titulo = document.createElement("h3");
+  titulo.textContent = nombreJornada;
+  contenedor.appendChild(titulo);
+
+  // Supongamos que tus partidos están en columnas partido1, partido2, etc.
+  Object.keys(jornada)
+    .filter(k => k.startsWith("partido") && jornada[k])
+    .forEach((clave, i) => {
+      const div = document.createElement("div");
+      div.classList.add("partido");
+      div.textContent = `${jornada[clave]}`;
+      contenedor.appendChild(div);
+    });
+}
+
+function mostrarMensaje(msg) {
+  const contenedor = document.getElementById("partidos-container");
+  contenedor.innerHTML = `<p>${msg}</p>`;
+}
+
+// === EJECUTAR CUANDO EL PARTICIPANTE ENTRA ===
+document.addEventListener("DOMContentLoaded", cargarJornadaActiva);
