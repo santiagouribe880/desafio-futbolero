@@ -1,78 +1,20 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Desafío Futbolero - Ingreso</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Participante - Desafío Futbolero</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <h1>⚽ Desafío Futbolero</h1>
+  <p>Ingresa tu código para ver la jornada activa:</p>
 
-  <div class="container">
-    <h1>⚽ Desafío Futbolero</h1>
-    <p>Ingresa tu código de participante para acceder a la jornada actual.</p>
+  <input type="text" id="codigo" placeholder="Código de acceso">
+  <button id="ver-jornada">Ver jornada</button>
 
-    <input id="codigoInput" type="text" placeholder="Ingrese su código" />
-    <button id="btnIngresar">Ingresar</button>
+  <div id="jornada"></div>
 
-    <p id="mensaje" class="mensaje"></p>
-  </div>
-
-  <script>
-    // URL al archivo CSV con los códigos válidos
-    const urlCodigos = "https://raw.githubusercontent.com/santiagouribe880/desafio-futbolero/main/data/codigos.csv";
-
-    // Función para validar el código ingresado
-    async function validarCodigoParticipante(codigoIngresado) {
-      try {
-        const response = await fetch(urlCodigos);
-        const data = await response.text();
-
-        const lineas = data.trim().split("\n");
-        const encabezados = lineas[0].split(",");
-        const registros = lineas.slice(1).map(linea => {
-          const valores = linea.split(",");
-          let obj = {};
-          encabezados.forEach((h, i) => obj[h.trim()] = valores[i]?.trim());
-          return obj;
-        });
-
-        // Validar si el código existe
-        return registros.some(r => r.codigo === codigoIngresado);
-      } catch (error) {
-        console.error("Error cargando códigos:", error);
-        return false;
-      }
-    }
-
-    // Evento al presionar el botón de ingreso
-    document.getElementById("btnIngresar").addEventListener("click", async () => {
-      const codigo = document.getElementById("codigoInput").value.trim();
-      const mensaje = document.getElementById("mensaje");
-
-      if (codigo === "") {
-        mensaje.textContent = "Por favor ingresa un código válido.";
-        mensaje.style.color = "red";
-        return;
-      }
-
-      mensaje.textContent = "Verificando código...";
-      mensaje.style.color = "black";
-
-      const valido = await validarCodigoParticipante(codigo);
-
-      if (valido) {
-        mensaje.textContent = "Código válido. Redirigiendo...";
-        mensaje.style.color = "green";
-        setTimeout(() => {
-          window.location.href = `main.html?codigo=${codigo}`;
-        }, 1000);
-      } else {
-        mensaje.textContent = "Código inválido. Verifica e intenta nuevamente.";
-        mensaje.style.color = "red";
-      }
-    });
-  </script>
-
+  <script src="participante.js"></script>
 </body>
 </html>
