@@ -1,46 +1,89 @@
-(() => {
-  const ADMIN_PASSWORD = "futbol2025";
+// ===============================
+// CONFIGURACIÓN PRINCIPAL
+// ===============================
+const GITHUB_TOKEN = "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";
+const REPO = "santiagouribe880/desafio-futbolero";
+const FILE_PATH = "data/jornada.csv";
+const BRANCH = "main";
 
-  // elementos
-  const loginBox = document.getElementById("loginBox");
-  const loginBtn = document.getElementById("loginBtn");
-  const adminKey = document.getElementById("adminKey");
-  const loginMsg = document.getElementById("loginMsg");
-  const adminPanel = document.getElementById("adminPanel");
-  const acumuladoInput = document.getElementById("acumuladoInput");
-  const horaLimiteInput = document.getElementById("horaLimiteInput");
-  const saveAcumuladoBtn = document.getElementById("saveAcumuladoBtn");
-  const activarJornadaBtn = document.getElementById("activarJornadaBtn");
-  const adminMsg = document.getElementById("adminMsg");
+// ===============================
+// FUNCIÓN: ACTUALIZAR ARCHIVO EN GITHUB
+// ===============================
+async function actualizarJornadaEnGitHub(nuevaDataCSV) {
+  try {
+    const getUrl = `https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`;
+    const getResp = await fetch(getUrl);
+    const fileData = await getResp.json();
+    const sha = fileData.sha; // se necesita para reemplazar el archivo
 
-  // Login simple
-  loginBtn.addEventListener("click", () => {
-    if ((adminKey.value || "").trim() === ADMIN_PASSWORD) {
-      loginBox.style.display = "none";
-      adminPanel.style.display = "block";
-      loginMsg.textContent = "";
+    const content = btoa(unescape(encodeURIComponent(nuevaDataCSV)));
+
+    const putResp = await fetch(getUrl, {
+      method: "PUT",
+      headers: {
+        "Authorization": `token ${GITHUB_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: "Actualizar jornada desde panel admin",
+        content: content,
+        sha: sha,
+        branch: BRANCH
+      })
+    });
+
+    if (putResp.ok) {
+      alert("✅ Jornada actualizada correctamente en GitHub.");
     } else {
-      loginMsg.textContent = "❌ Contraseña incorrecta";
+      const errorData = await putResp.json();
+      console.error("Error:", errorData);
+      alert("⚠️ Error al subir la jornada a GitHub.");
     }
-  });
+  } catch (err) {
+    console.error("Error general:", err);
+    alert("❌ No se pudo conectar con GitHub.");
+  }
+}
 
-  // Guardar acumulado y hora límite
-  saveAcumuladoBtn.addEventListener("click", () => {
-    const premio = (acumuladoInput.value || "").trim();
-    const hora = horaLimiteInput.value;
-    if (!premio || !hora) {
-      alert("Completa el monto y la hora límite.");
-      return;
-    }
+// ===============================
+// FUNCIÓN: GENERAR NUEVO CSV
+// ===============================
+function generarCSV() {
+  // Aquí podrías reemplazar los datos con lo que definas dinámicamente
+  const csvData = `
+jornada,partido,equipo_local,equipo_visitante,fecha,activa
+2,Partido 1,Nacional,Medellín,2025-11-05,true
+2,Partido 2,Millonarios,Santafe,2025-11-05,true
+2,Partido 3,Cali,Tolima,2025-11-05,true
+2,Partido 4,América,Bucaramanga,2025-11-05,true
+  `.trim();
 
-    localStorage.setItem("acumuladoJornada", premio);
-    localStorage.setItem("horaLimiteJornada", hora);
-    adminMsg.textContent = `💰 Acumulado: ${premio} - 🕒 Límite: ${new Date(hora).toLocaleString("es-CO")}`;
-  });
+  document.getElementById("csv-preview").value = csvData;
+  return csvData;
+}
 
-  // Activar jornada
-  activarJornadaBtn.addEventListener("click", () => {
-    localStorage.setItem("jornadaActiva", "true");
-    adminMsg.textContent = "⚽ Jornada activada con éxito.";
-  });
-})();
+// ===============================
+// EVENTOS DE BOTONES
+// ===============================
+document.getElementById("generar-btn").addEventListener("click", () => {
+  const nuevaData = generarCSV();
+  document.getElementById("csv-preview").value = nuevaData;
+});
+
+document.getElementById("activar-btn").addEventListener("click", async () => {
+  const premio = document.getElementById("premio").value.trim();
+  const fecha = document.getElementById("fecha_limite").value;
+
+  if (!premio || !fecha) {
+    alert("Por favor completa el premio y la fecha límite antes de activar.");
+    return;
+  }
+
+  const nuevaData = document.getElementById("csv-preview").value.trim();
+  if (!nuevaData) {
+    alert("Debes generar la jornada antes de activarla.");
+    return;
+  }
+
+  await actualizarJornadaEnGitHub(nuevaData);
+});
