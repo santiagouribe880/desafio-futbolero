@@ -3,159 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Administrador | Desafío Futbolero</title>
-  <link rel="icon" href="⚽" type="image/png">
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #003366, #0099cc);
-      color: #fff;
-      text-align: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 0;
-    }
-    h1 {
-      margin-top: 40px;
-      font-size: 2rem;
-      letter-spacing: 1px;
-    }
-    #loginBox, #adminPanel {
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(6px);
-      padding: 25px;
-      border-radius: 15px;
-      width: 90%;
-      max-width: 400px;
-      margin: 40px auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
-    input, button {
-      width: 90%;
-      margin: 10px 0;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-    }
-    input {
-      background: #fff;
-      color: #000;
-    }
-    button {
-      background: #00cc66;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background: #00b359;
-      transform: scale(1.05);
-    }
-    #loginMsg, #adminMsg {
-      margin-top: 10px;
-      font-size: 0.9rem;
-    }
-    hr {
-      border: 1px solid rgba(255,255,255,0.2);
-      margin: 20px 0;
-    }
-    .note {
-      font-size: 0.85rem;
-      color: #ffeb3b;
-    }
-    label {
-      display: block;
-      text-align: left;
-      margin-left: 5%;
-      font-size: 0.95rem;
-      margin-top: 10px;
-    }
-  </style>
+  <title>Administrador - Desafío Futbolero</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>⚽ Panel Administrador</h1>
+  <h1>⚽ Panel del Administrador - Desafío Futbolero</h1>
 
-  <!-- Caja de inicio de sesión -->
-  <div id="loginBox">
-    <input type="password" id="adminKey" placeholder="Contraseña de administrador">
-    <button id="loginBtn" type="button">Ingresar</button>
-    <p id="loginMsg"></p>
-  </div>
+  <section>
+    <h3>Datos de la Jornada</h3>
+    <label>Premio de la jornada:</label>
+    <input type="text" id="premio" placeholder="Ejemplo: Bono de $100.000">
 
-  <!-- Panel del administrador -->
-  <div id="adminPanel" style="display:none;">
-    <h2>⚙️ Configuración de Jornada</h2>
+    <label>Fecha límite de pronósticos:</label>
+    <input type="datetime-local" id="fecha_limite">
 
-    <label>💰 Premio acumulado:</label>
-    <input type="text" id="acumuladoInput" placeholder="Ej: 100000">
-    <button id="saveAcumuladoBtn" type="button">Guardar premio</button>
+    <button id="generar-btn">Generar jornada</button>
+    <button id="activar-btn">Activar jornada</button>
+  </section>
 
-    <hr>
+  <section>
+    <h3>Vista previa de jornada activa</h3>
+    <textarea id="csv-preview" rows="10" cols="70" readonly></textarea>
+  </section>
 
-    <label>⏰ Hora límite (hora Colombia):</label>
-    <input type="datetime-local" id="horaLimiteInput">
-    <button id="guardarHoraBtn" type="button">Guardar hora límite</button>
-
-    <hr>
-
-    <button id="activarJornadaBtn" type="button">🏁 Activar jornada</button>
-
-    <p class="note">⚠️ En caso de que existan varios ganadores, el premio se dividirá en partes iguales.</p>
-
-    <p id="adminMsg"></p>
-  </div>
-
-  <script>
-    (() => {
-      const ADMIN_PASSWORD = "futbol2025";
-
-      const loginBox = document.getElementById("loginBox");
-      const loginBtn = document.getElementById("loginBtn");
-      const adminKey = document.getElementById("adminKey");
-      const loginMsg = document.getElementById("loginMsg");
-      const adminPanel = document.getElementById("adminPanel");
-      const acumuladoInput = document.getElementById("acumuladoInput");
-      const saveAcumuladoBtn = document.getElementById("saveAcumuladoBtn");
-      const activarJornadaBtn = document.getElementById("activarJornadaBtn");
-      const adminMsg = document.getElementById("adminMsg");
-      const horaLimiteInput = document.getElementById("horaLimiteInput");
-      const guardarHoraBtn = document.getElementById("guardarHoraBtn");
-
-      // Ingreso al panel
-      loginBtn.addEventListener("click", () => {
-        if ((adminKey.value || "").trim() === ADMIN_PASSWORD) {
-          loginBox.style.display = "none";
-          adminPanel.style.display = "block";
-          loginMsg.textContent = "";
-        } else {
-          loginMsg.textContent = "❌ Contraseña incorrecta";
-        }
-      });
-
-      // Guardar premio
-      saveAcumuladoBtn.addEventListener("click", () => {
-        const v = (acumuladoInput.value || "").trim();
-        if (!v) { alert("Ingresa un valor de acumulado"); return; }
-        localStorage.setItem("acumuladoJornada", v);
-        adminMsg.textContent = `💰 Premio guardado: ${v}`;
-      });
-
-      // Guardar hora límite
-      guardarHoraBtn.addEventListener("click", () => {
-        const h = horaLimiteInput.value;
-        if (!h) { alert("Selecciona una hora límite"); return; }
-        localStorage.setItem("horaLimiteJornada", h);
-        adminMsg.textContent = `🕒 Hora límite guardada: ${new Date(h).toLocaleString("es-CO", { timeZone: "America/Bogota" })}`;
-      });
-
-      // Activar jornada
-      activarJornadaBtn.addEventListener("click", () => {
-        localStorage.setItem("jornadaActiva", "true");
-        adminMsg.textContent = "✅ Jornada activada con éxito.";
-      });
-    })();
-  </script>
+  <script src="admin.js"></script>
 </body>
 </html>
