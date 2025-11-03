@@ -46,16 +46,13 @@ formJornada.addEventListener("submit", async (e) => {
   const nombre = document.getElementById("nombre").value.trim();
   const premio = document.getElementById("premio").value.trim();
 
-  const partidos = Array.from(document.querySelectorAll(".partido")).map((p) => ({
-    local: p.querySelector(".local").value.trim(),
-    visitante: p.querySelector(".visitante").value.trim(),
-    fecha: p.querySelector(".fechaPartido").value,
-  }));
-
-  // Validaciones básicas
-  if (!nombre || !premio || partidos.length === 0) {
-    return mostrarMensaje("Por favor completa todos los campos", "error");
-  }
+  const partidos = Array.from(document.querySelectorAll(".partido"))
+    .map((p) => ({
+      local: p.querySelector(".local").value,
+      visitante: p.querySelector(".visitante").value,
+      fecha: p.querySelector(".fechaPartido").value || null,
+    }))
+    .filter((p) => p.local && p.visitante);
 
   try {
     const res = await fetch(`${API_URL}/api/jornada`, {
@@ -65,15 +62,18 @@ formJornada.addEventListener("submit", async (e) => {
     });
 
     const data = await res.json();
-    if (!res.ok) return mostrarMensaje(data.message || "Error al crear jornada", "error");
 
-    mostrarMensaje(data.message);
-    formJornada.reset();
-    partidosContainer.innerHTML = ""; // Limpia los partidos agregados
-    cargarJornadas();
+    if (res.ok) {
+      mostrarMensaje(data.message, "exito");
+      formJornada.reset();
+      partidosContainer.innerHTML = "";
+      cargarJornadas();
+    } else {
+      mostrarMensaje(data.message || "Error al crear la jornada", "error");
+    }
   } catch (err) {
-    console.error(err);
     mostrarMensaje("Error al conectar con el servidor", "error");
+    console.error(err);
   }
 });
 
