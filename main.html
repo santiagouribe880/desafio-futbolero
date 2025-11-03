@@ -3,28 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Desafío Futbolero - Participante</title>
+  <title>Desafío Futbolero - Participantes</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="main-container">
-    <header>
-      <h1>⚽ Desafío Futbolero</h1>
-      <p class="subtitulo">Pronostica y gana con tu conocimiento del fútbol</p>
-    </header>
+    <h1>⚽ Desafío Futbolero</h1>
 
-    <section id="infoJornada" class="card">
-      <h2 id="nombreJornada">Cargando jornada...</h2>
-      <p>🏆 Premio: <span id="premioJornada"></span></p>
+    <!-- Ingreso de código -->
+    <section class="card">
+      <h2>🔑 Ingresar al Desafío</h2>
+      <p>Introduce tu código de acceso para participar en la jornada activa.</p>
+      <input type="text" id="codigoAcceso" placeholder="Ej: XG7FJ9" maxlength="6" />
+      <button id="btnAcceder" class="btn-principal">Ingresar</button>
     </section>
 
-    <section id="contenedorPartidos" class="card">
-      <p>Cargando partidos...</p>
+    <!-- Información de la jornada -->
+    <section id="jornadaActiva" class="card oculto">
+      <h2 id="nombreJornada"></h2>
+      <p id="premioJornada" class="premio"></p>
+
+      <div id="listaPartidos"></div>
+
+      <button id="btnEnviar" class="btn-principal">📨 Enviar Pronósticos</button>
     </section>
 
-    <footer>
-      <p>© 2025 Desafío Futbolero - Todos los derechos reservados</p>
-    </footer>
+    <!-- Mensajes -->
+    <div id="mensaje" class="mensaje"></div>
   </div>
 
   <script src="main.js"></script>
