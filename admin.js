@@ -1,89 +1,129 @@
-// ===============================
-// CONFIGURACIÓN PRINCIPAL
-// ===============================
-const GITHUB_TOKEN = "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";
-const REPO = "santiagouribe880/desafio-futbolero";
-const FILE_PATH = "data/jornada.csv";
-const BRANCH = "main";
+// admin.js
 
-// ===============================
-// FUNCIÓN: ACTUALIZAR ARCHIVO EN GITHUB
-// ===============================
-async function actualizarJornadaEnGitHub(nuevaDataCSV) {
+const API_URL = window.location.origin;
+
+// Elementos
+const formJornada = document.getElementById("formJornada");
+const partidosContainer = document.getElementById("partidosContainer");
+const agregarPartidoBtn = document.getElementById("agregarPartido");
+const selectJornada = document.getElementById("selectJornada");
+const activarJornadaBtn = document.getElementById("activarJornada");
+const cantidadCodigos = document.getElementById("cantidadCodigos");
+const generarCodigosBtn = document.getElementById("generarCodigos");
+const listaCodigos = document.getElementById("listaCodigos");
+const mensaje = document.getElementById("mensaje");
+
+// ==============================
+// 🔹 Función para mostrar mensaje
+// ==============================
+function mostrarMensaje(texto, tipo = "exito") {
+  mensaje.textContent = texto;
+  mensaje.className = `mensaje ${tipo}`;
+  setTimeout(() => (mensaje.textContent = ""), 4000);
+}
+
+// ==============================
+// 🔹 Agregar nuevo partido
+// ==============================
+agregarPartidoBtn.addEventListener("click", () => {
+  const div = document.createElement("div");
+  div.classList.add("partido");
+  div.innerHTML = `
+    <input type="text" class="local" placeholder="Equipo local" required />
+    <input type="text" class="visitante" placeholder="Equipo visitante" required />
+    <input type="datetime-local" class="fechaPartido" required />
+  `;
+  partidosContainer.appendChild(div);
+});
+
+// ==============================
+// 🔹 Crear nueva jornada
+// ==============================
+formJornada.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const nombre = document.getElementById("nombre").value;
+  const fecha = document.getElementById("fecha").value;
+  const premio = document.getElementById("premio").value;
+
+  const partidos = Array.from(document.querySelectorAll(".partido")).map((p) => ({
+    local: p.querySelector(".local").value,
+    visitante: p.querySelector(".visitante").value,
+    fecha: p.querySelector(".fechaPartido").value,
+  }));
+
   try {
-    const getUrl = `https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`;
-    const getResp = await fetch(getUrl);
-    const fileData = await getResp.json();
-    const sha = fileData.sha; // se necesita para reemplazar el archivo
-
-    const content = btoa(unescape(encodeURIComponent(nuevaDataCSV)));
-
-    const putResp = await fetch(getUrl, {
-      method: "PUT",
-      headers: {
-        "Authorization": `token ${GITHUB_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: "Actualizar jornada desde panel admin",
-        content: content,
-        sha: sha,
-        branch: BRANCH
-      })
+    const res = await fetch(`${API_URL}/api/jornada`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre, fecha, premio, partidos }),
     });
 
-    if (putResp.ok) {
-      alert("✅ Jornada actualizada correctamente en GitHub.");
-    } else {
-      const errorData = await putResp.json();
-      console.error("Error:", errorData);
-      alert("⚠️ Error al subir la jornada a GitHub.");
-    }
+    const data = await res.json();
+    mostrarMensaje(data.message);
+    cargarJornadas();
+    formJornada.reset();
   } catch (err) {
-    console.error("Error general:", err);
-    alert("❌ No se pudo conectar con GitHub.");
+    mostrarMensaje("Error al crear la jornada", "error");
   }
-}
-
-// ===============================
-// FUNCIÓN: GENERAR NUEVO CSV
-// ===============================
-function generarCSV() {
-  // Aquí podrías reemplazar los datos con lo que definas dinámicamente
-  const csvData = `
-jornada,partido,equipo_local,equipo_visitante,fecha,activa
-2,Partido 1,Nacional,Medellín,2025-11-05,true
-2,Partido 2,Millonarios,Santafe,2025-11-05,true
-2,Partido 3,Cali,Tolima,2025-11-05,true
-2,Partido 4,América,Bucaramanga,2025-11-05,true
-  `.trim();
-
-  document.getElementById("csv-preview").value = csvData;
-  return csvData;
-}
-
-// ===============================
-// EVENTOS DE BOTONES
-// ===============================
-document.getElementById("generar-btn").addEventListener("click", () => {
-  const nuevaData = generarCSV();
-  document.getElementById("csv-preview").value = nuevaData;
 });
 
-document.getElementById("activar-btn").addEventListener("click", async () => {
-  const premio = document.getElementById("premio").value.trim();
-  const fecha = document.getElementById("fecha_limite").value;
+// ==============================
+// 🔹 Cargar jornadas existentes
+// ==============================
+async function cargarJornadas() {
+  const res = await fetch(`${API_URL}/api/jornadas`);
+  const jornadas = await res.json();
 
-  if (!premio || !fecha) {
-    alert("Por favor completa el premio y la fecha límite antes de activar.");
-    return;
-  }
+  selectJornada.innerHTML = "";
+  jornadas.forEach((j) => {
+    const option = document.createElement("option");
+    option.value = j.id;
+    option.textContent = `${j.nombre} (${j.activa ? "Activa" : "Inactiva"})`;
+    selectJornada.appendChild(option);
+  });
+}
+cargarJornadas();
 
-  const nuevaData = document.getElementById("csv-preview").value.trim();
-  if (!nuevaData) {
-    alert("Debes generar la jornada antes de activarla.");
-    return;
-  }
+// ==============================
+// 🔹 Activar jornada
+// ==============================
+activarJornadaBtn.addEventListener("click", async () => {
+  const id = selectJornada.value;
+  if (!id) return mostrarMensaje("Selecciona una jornada", "error");
 
-  await actualizarJornadaEnGitHub(nuevaData);
+  await fetch(`${API_URL}/api/activar/${id}`, { method: "POST" });
+  mostrarMensaje("Jornada activada correctamente");
+  cargarJornadas();
 });
+
+// ==============================
+// 🔹 Generar códigos
+// ==============================
+generarCodigosBtn.addEventListener("click", async () => {
+  const cantidad = parseInt(cantidadCodigos.value);
+  if (!cantidad || cantidad <= 0)
+    return mostrarMensaje("Cantidad inválida", "error");
+
+  const res = await fetch(`${API_URL}/api/codigos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cantidad }),
+  });
+
+  const data = await res.json();
+  mostrarMensaje(data.message);
+  mostrarCodigos();
+});
+
+// ==============================
+// 🔹 Mostrar códigos
+// ==============================
+async function mostrarCodigos() {
+  const res = await fetch(`${API_URL}/api/codigos`);
+  const codigos = await res.json();
+  listaCodigos.innerHTML =
+    "<h3>Códigos Generados:</h3>" +
+    codigos.map((c) => `<div>${c.codigo} ${c.usado ? "(Usado)" : ""}</div>`).join("");
+}
+mostrarCodigos();
