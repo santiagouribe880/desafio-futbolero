@@ -1,30 +1,54 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Administrador - Desafío Futbolero</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>⚽ Panel del Administrador - Desafío Futbolero</h1>
+  <div class="admin-container">
+    <h1>⚽ Panel Administrador - Desafío Futbolero</h1>
 
-  <section>
-    <h3>Datos de la Jornada</h3>
-    <label>Premio de la jornada:</label>
-    <input type="text" id="premio" placeholder="Ejemplo: Bono de $100.000">
+    <!-- Crear jornada -->
+    <section class="card">
+      <h2>📅 Crear Nueva Jornada</h2>
+      <form id="formJornada">
+        <input type="text" id="nombre" placeholder="Nombre de la jornada" required />
+        <input type="date" id="fecha" required />
+        <input type="text" id="premio" placeholder="Premio de la jornada" required />
 
-    <label>Fecha límite de pronósticos:</label>
-    <input type="datetime-local" id="fecha_limite">
+        <div id="partidosContainer">
+          <h3>Partidos</h3>
+          <div class="partido">
+            <input type="text" class="local" placeholder="Equipo local" required />
+            <input type="text" class="visitante" placeholder="Equipo visitante" required />
+            <input type="datetime-local" class="fechaPartido" required />
+          </div>
+        </div>
+        <button type="button" id="agregarPartido">➕ Agregar Partido</button>
+        <button type="submit">💾 Guardar Jornada</button>
+      </form>
+    </section>
 
-    <button id="generar-btn">Generar jornada</button>
-    <button id="activar-btn">Activar jornada</button>
-  </section>
+    <!-- Activar jornada -->
+    <section class="card">
+      <h2>✅ Activar Jornada</h2>
+      <select id="selectJornada"></select>
+      <button id="activarJornada">Activar</button>
+    </section>
 
-  <section>
-    <h3>Vista previa de jornada activa</h3>
-    <textarea id="csv-preview" rows="10" cols="70" readonly></textarea>
-  </section>
+    <!-- Generar códigos -->
+    <section class="card">
+      <h2>🎟️ Generar Códigos de Acceso</h2>
+      <input type="number" id="cantidadCodigos" placeholder="Cantidad de códigos" min="1" />
+      <button id="generarCodigos">Generar</button>
+      <div id="listaCodigos"></div>
+    </section>
+
+    <!-- Mensajes -->
+    <div id="mensaje" class="mensaje"></div>
+  </div>
 
   <script src="admin.js"></script>
 </body>
