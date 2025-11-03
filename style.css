@@ -1,38 +1,167 @@
-/* ======== ESTILO GENERAL ======== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
+/* style.css - Desafío Futbolero */
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap");
+
+:root {
+  --primario: #007bff;
+  --secundario: #0056b3;
+  --fondo: #f5f7fa;
+  --blanco: #ffffff;
+  --texto: #333;
+  --sombra: rgba(0, 0, 0, 0.1);
+  --borde: #ddd;
 }
 
 body {
-  background: linear-gradient(180deg, #001f3f, #003366);
-  color: #fff;
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background-color: var(--fondo);
+  color: var(--texto);
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   min-height: 100vh;
 }
 
-/* ======== HEADER ======== */
+h1, h2, h3 {
+  color: var(--secundario);
+}
+
+.main-container,
+.admin-container {
+  width: 100%;
+  max-width: 900px;
+  padding: 20px;
+}
+
 header {
   text-align: center;
-  padding: 25px 15px;
-  background: rgba(0, 0, 0, 0.25);
-  border-bottom: 2px solid #ffcc00;
+  margin-bottom: 20px;
 }
 
 header h1 {
   font-size: 2rem;
-  color: #ffcc00;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
-header h3 {
-  color: #fff;
-  font-weight: 500;
-  margin-bottom: 4px;
+.subtitulo {
+  color: #666;
+  font-size: 1rem;
 }
 
-header p {
-  color: #d0d0
+.card {
+  background-color: var(--blanco);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px var(--sombra);
+}
+
+input, select, button {
+  font-family: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  margin: 5px 0;
+}
+
+button {
+  background-color: var(--primario);
+  color: var(--blanco);
+  cursor: pointer;
+  font-weight: 600;
+  border: none;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--secundario);
+}
+
+/* ---- ADMIN PANEL ---- */
+#partidosContainer .partido {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.mensaje {
+  text-align: center;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.mensaje.exito {
+  color: green;
+}
+.mensaje.error {
+  color: red;
+}
+
+/* ---- PARTICIPANTE ---- */
+.partido {
+  border-bottom: 1px solid var(--borde);
+  padding: 10px 0;
+}
+
+.partido:last-child {
+  border-bottom: none;
+}
+
+.equipos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.equipo.local {
+  color: var(--primario);
+}
+
+.equipo.visitante {
+  color: #d9534f;
+}
+
+.vs {
+  margin: 0 10px;
+  color: #666;
+}
+
+.detalles {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
+
+.pronostico {
+  width: 120px;
+  text-align: center;
+}
+
+/* ---- FOOTER ---- */
+footer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 20px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .equipos {
+    flex-direction: column;
+  }
+
+  .detalles {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pronostico {
+    width: 100%;
+  }
+}
