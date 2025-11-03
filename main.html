@@ -3,29 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Desafío Futbolero - Pronósticos</title>
+  <title>Desafío Futbolero - Participante</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="main-container">
+    <header>
+      <h1>⚽ Desafío Futbolero</h1>
+      <p class="subtitulo">Pronostica y gana con tu conocimiento del fútbol</p>
+    </header>
 
-  <div class="container">
-    <h1>⚽ Desafío Futbolero</h1>
-    <p id="saludoParticipante"></p>
+    <section id="infoJornada" class="card">
+      <h2 id="nombreJornada">Cargando jornada...</h2>
+      <p>🏆 Premio: <span id="premioJornada"></span></p>
+    </section>
 
-    <h2>Jornada Actual</h2>
-    <div id="partidosContainer" class="partidos-container">
+    <section id="contenedorPartidos" class="card">
       <p>Cargando partidos...</p>
-    </div>
+    </section>
 
-    <button id="btnSalir" class="btn-salir">Cerrar sesión</button>
+    <footer>
+      <p>© 2025 Desafío Futbolero - Todos los derechos reservados</p>
+    </footer>
   </div>
 
   <script src="main.js"></script>
-  <script>
-    document.getElementById("btnSalir").addEventListener("click", () => {
-      window.location.href = "index.html";
-    });
-  </script>
-
 </body>
 </html>
