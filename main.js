@@ -1,38 +1,50 @@
+// main.js
+
+// Cargar jornada activa desde el servidor
 async function cargarJornadaActiva() {
-  const csvUrl = "https://raw.githubusercontent.com/santiagouribe880/desafio-futbolero/main/data/jornada.csv";
-  const resp = await fetch(csvUrl);
-  const csvText = await resp.text();
+  try {
+    const res = await fetch("/api/jornada-activa");
+    const jornada = await res.json();
 
-  const lineas = csvText.split("\n").slice(1);
-  const activos = lineas.filter(l => l.includes("true"));
-  
-  const contenedor = document.getElementById("jornada");
-  contenedor.innerHTML = "";
+    const nombreJornada = document.getElementById("nombreJornada");
+    const premioJornada = document.getElementById("premioJornada");
+    const contenedor = document.getElementById("contenedorPartidos");
 
-  if (activos.length === 0) {
-    contenedor.innerHTML = "<p>No hay jornada activa en este momento ⚽</p>";
-    return;
+    if (!jornada) {
+      nombreJornada.textContent = "No hay jornada activa actualmente ⚠️";
+      premioJornada.textContent = "-";
+      contenedor.innerHTML = "<p>Vuelve pronto para participar en la próxima jornada.</p>";
+      return;
+    }
+
+    nombreJornada.textContent = jornada.nombre;
+    premioJornada.textContent = jornada.premio;
+
+    const html = jornada.partidos
+      .map(
+        (p) => `
+        <div class="partido">
+          <div class="equipos">
+            <span class="equipo local">${p.local}</span>
+            <span class="vs">vs</span>
+            <span class="equipo visitante">${p.visitante}</span>
+          </div>
+          <div class="detalles">
+            <span class="fecha">${new Date(p.fecha).toLocaleString()}</span>
+            <input type="text" class="pronostico" placeholder="Tu pronóstico (ej: 2-1)" />
+          </div>
+        </div>
+      `
+      )
+      .join("");
+
+    contenedor.innerHTML = html;
+  } catch (error) {
+    document.getElementById("contenedorPartidos").innerHTML =
+      "<p>Error al cargar la jornada. Intenta más tarde.</p>";
+    console.error("Error al cargar jornada activa:", error);
   }
-
-  activos.forEach(linea => {
-    const [jornada, partido, local, visitante, fecha] = linea.split(",");
-    const card = document.createElement("div");
-    card.classList.add("partido");
-    card.innerHTML = `
-      <h4>${partido}</h4>
-      <p><strong>${local}</strong> vs <strong>${visitante}</strong></p>
-      <p>📅 ${fecha}</p>
-    `;
-    contenedor.appendChild(card);
-  });
 }
 
-document.getElementById("ver-jornada").addEventListener("click", async () => {
-  const codigo = document.getElementById("codigo").value.trim();
-  if (!codigo) {
-    alert("Por favor ingresa tu código de participante.");
-    return;
-  }
-
-  await cargarJornadaActiva();
-});
+// Inicializar
+cargarJornadaActiva();
