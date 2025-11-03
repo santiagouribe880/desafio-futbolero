@@ -10,64 +10,43 @@
   <div class="admin-container">
     <h1>⚽ Panel Administrador - Desafío Futbolero</h1>
 
-    <!-- ===================== -->
-    <!-- 📅 CREAR NUEVA JORNADA -->
-    <!-- ===================== -->
+    <!-- Crear jornada -->
     <section class="card">
       <h2>📅 Crear Nueva Jornada</h2>
       <form id="formJornada">
-        <label for="nombre">Nombre de la jornada:</label>
-        <input type="text" id="nombre" placeholder="Ej: Jornada 5 - Clausura" required />
-
-        <label for="premio">Premio de la jornada:</label>
-        <input type="text" id="premio" placeholder="Ej: Bono de $200.000" required />
+        <input type="text" id="nombre" placeholder="Nombre de la jornada" required />
+        <input type="text" id="premio" placeholder="Premio de la jornada" required />
 
         <div id="partidosContainer">
           <h3>Partidos</h3>
           <div class="partido">
             <input type="text" class="local" placeholder="Equipo local" required />
             <input type="text" class="visitante" placeholder="Equipo visitante" required />
-            <input type="datetime-local" class="fechaPartido" required />
+            <input type="datetime-local" class="fechaPartido" placeholder="Fecha y hora" required />
           </div>
         </div>
 
-        <div class="botones-partidos">
-          <button type="button" id="agregarPartido" class="btn-secundario">➕ Agregar Partido</button>
-          <button type="submit" class="btn-principal">💾 Guardar Jornada</button>
-        </div>
+        <button type="button" id="agregarPartido">➕ Agregar Partido</button>
+        <button type="submit">💾 Guardar Jornada</button>
       </form>
     </section>
 
-    <!-- ===================== -->
-    <!-- ✅ ACTIVAR JORNADA -->
-    <!-- ===================== -->
+    <!-- Activar jornada -->
     <section class="card">
       <h2>✅ Activar Jornada</h2>
-      <p>Selecciona una jornada creada para activarla y que esté disponible a los participantes.</p>
-      <div class="activar-container">
-        <select id="selectJornada" required>
-          <option value="">Cargando jornadas...</option>
-        </select>
-        <button id="activarJornada" class="btn-principal">Activar Jornada</button>
-      </div>
+      <select id="selectJornada"></select>
+      <button id="activarJornada">Activar</button>
     </section>
 
-    <!-- ===================== -->
-    <!-- 🎟️ GENERAR CÓDIGOS -->
-    <!-- ===================== -->
+    <!-- Generar códigos -->
     <section class="card">
       <h2>🎟️ Generar Códigos de Acceso</h2>
-      <p>Los códigos permiten a los usuarios participar en el desafío.</p>
-      <div class="codigos-container">
-        <input type="number" id="cantidadCodigos" placeholder="Cantidad de códigos" min="1" />
-        <button id="generarCodigos" class="btn-principal">Generar Códigos</button>
-      </div>
-      <div id="listaCodigos" class="lista-codigos"></div>
+      <input type="number" id="cantidadCodigos" placeholder="Cantidad de códigos" min="1" />
+      <button id="generarCodigos">Generar</button>
+      <div id="listaCodigos"></div>
     </section>
 
-    <!-- ===================== -->
-    <!-- 💬 MENSAJE DE SISTEMA -->
-    <!-- ===================== -->
+    <!-- Mensajes -->
     <div id="mensaje" class="mensaje"></div>
   </div>
 
