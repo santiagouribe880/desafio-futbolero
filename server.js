@@ -80,21 +80,48 @@ app.get("/api/jornadas", (req, res) => {
 // ==============================
 // 🔹 Activar jornada
 // ==============================
-app.post("/api/activar/:id", (req, res) => {
-  const { id } = req.params;
-  let jornadas = readJSON(jornadasPath);
+app.post("/api/jornada", async (req, res) => {
+  try {
+    const { nombre, premio, partidos } = req.body;
 
-  if (!jornadas.length) {
-    return res.status(400).json({ message: "No hay jornadas disponibles." });
+    if (!nombre || !premio || !partidos || partidos.length === 0) {
+      return res.status(400).json({ message: "Faltan datos obligatorios" });
+    }
+
+    // 🔹 Crear la nueva jornada sin campo fecha
+    const nuevaJornada = {
+      id: Date.now().toString(),
+      nombre,
+      premio,
+      activa: false,
+      partidos: partidos.map((p, i) => ({
+        id: i + 1,
+        local: p.local,
+        visitante: p.visitante,
+        fecha: p.fecha,
+        resultado: null,
+      })),
+    };
+
+    // 🔹 Leer el archivo existente (si lo tienes en GitHub o en el sistema local)
+    const fs = require("fs");
+    const path = require("path");
+    const filePath = path.join(__dirname, "data", "jornada.json");
+
+    let jornadas = [];
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, "utf8");
+      jornadas = data ? JSON.parse(data) : [];
+    }
+
+    jornadas.push(nuevaJornada);
+    fs.writeFileSync(filePath, JSON.stringify(jornadas, null, 2));
+
+    res.json({ message: "Jornada creada correctamente", jornada: nuevaJornada });
+  } catch (err) {
+    console.error("❌ Error al crear jornada:", err);
+    res.status(500).json({ message: "Error al crear la jornada" });
   }
-
-  jornadas = jornadas.map((j) => ({
-    ...j,
-    activa: j.id === id,
-  }));
-
-  writeJSON(jornadasPath, jornadas);
-  res.json({ message: "✅ Jornada activada correctamente." });
 });
 
 // ==============================
