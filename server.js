@@ -1,5 +1,6 @@
 import express from "express";
 import fs from "fs";
+import path from "path";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { v4 as uuidv4 } from "uuid";
@@ -7,62 +8,72 @@ import { v4 as uuidv4 } from "uuid";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ==============================
+// 🧩 Middlewares
+// ==============================
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
 // ==============================
-// 📁 Rutas de archivos
+// 📁 Rutas de datos
 // ==============================
-const DATA_PATH = "./data";
-const JORNADAS_FILE = `${DATA_PATH}/jornada.csv`;
-const CODIGOS_FILE = `${DATA_PATH}/codigos.csv`;
+const dataDir = path.join(process.cwd(), "data");
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
 
-// ==============================
-// 🔹 Utilidades para leer/escribir CSV
-// ==============================
-function leerCSV(path) {
-  if (!fs.existsSync(path)) return [];
-  const data = fs.readFileSync(path, "utf8");
-  return data
-    .split("\n")
-    .filter((l) => l.trim() !== "")
-    .map((l) => JSON.parse(l));
+const jornadasPath = path.join(dataDir, "jornadas.json");
+const codigosPath = path.join(dataDir, "codigos.json");
+
+// Funciones auxiliares
+function readJSON(file) {
+  if (!fs.existsSync(file)) return [];
+  const data = fs.readFileSync(file, "utf-8");
+  try {
+    return JSON.parse(data);
+  } catch {
+    return [];
+  }
 }
 
-function escribirCSV(path, array) {
-  fs.writeFileSync(path, array.map((x) => JSON.stringify(x)).join("\n"));
+function writeJSON(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
 // ==============================
-// 🔹 Crear nueva jornada
+// 🔹 Crear jornada
 // ==============================
 app.post("/api/jornada", (req, res) => {
-  const { nombre, fecha, premio, partidos } = req.body;
-  if (!nombre || !fecha || !premio || !partidos)
-    return res.status(400).json({ message: "Datos incompletos" });
+  const { nombre, premio, partidos } = req.body;
 
-  const jornadas = leerCSV(JORNADAS_FILE);
+  if (!nombre || !premio || !partidos || partidos.length === 0) {
+    return res.status(400).json({ message: "Datos incompletos para crear la jornada." });
+  }
 
-  const nueva = {
+  const jornadas = readJSON(jornadasPath);
+
+  const nuevaJornada = {
     id: uuidv4(),
     nombre,
-    fecha,
     premio,
     activa: false,
-    partidos,
+    partidos: partidos.map((p) => ({
+      local: p.local.trim(),
+      visitante: p.visitante.trim(),
+      fecha: p.fecha ? new Date(p.fecha).toISOString() : null,
+    })),
   };
 
-  jornadas.push(nueva);
-  escribirCSV(JORNADAS_FILE, jornadas);
-  res.json({ message: "Jornada creada correctamente ✅" });
+  jornadas.push(nuevaJornada);
+  writeJSON(jornadasPath, jornadas);
+
+  res.json({ message: "✅ Jornada creada con éxito", jornada: nuevaJornada });
 });
 
 // ==============================
-// 🔹 Listar jornadas
+// 🔹 Obtener todas las jornadas
 // ==============================
 app.get("/api/jornadas", (req, res) => {
-  const jornadas = leerCSV(JORNADAS_FILE);
+  const jornadas = readJSON(jornadasPath);
   res.json(jornadas);
 });
 
@@ -71,24 +82,28 @@ app.get("/api/jornadas", (req, res) => {
 // ==============================
 app.post("/api/activar/:id", (req, res) => {
   const { id } = req.params;
-  const jornadas = leerCSV(JORNADAS_FILE);
+  let jornadas = readJSON(jornadasPath);
 
-  if (!jornadas.length) return res.status(404).json({ message: "No hay jornadas creadas" });
+  if (!jornadas.length) {
+    return res.status(400).json({ message: "No hay jornadas disponibles." });
+  }
 
-  jornadas.forEach((j) => (j.activa = j.id === id));
-  escribirCSV(JORNADAS_FILE, jornadas);
+  jornadas = jornadas.map((j) => ({
+    ...j,
+    activa: j.id === id,
+  }));
 
-  res.json({ message: "Jornada activada correctamente ✅" });
+  writeJSON(jornadasPath, jornadas);
+  res.json({ message: "✅ Jornada activada correctamente." });
 });
 
 // ==============================
 // 🔹 Obtener jornada activa
 // ==============================
 app.get("/api/jornada-activa", (req, res) => {
-  const jornadas = leerCSV(JORNADAS_FILE);
+  const jornadas = readJSON(jornadasPath);
   const activa = jornadas.find((j) => j.activa);
-  if (!activa) return res.json(null);
-  res.json(activa);
+  res.json(activa || null);
 });
 
 // ==============================
@@ -97,30 +112,31 @@ app.get("/api/jornada-activa", (req, res) => {
 app.post("/api/codigos", (req, res) => {
   const { cantidad } = req.body;
   if (!cantidad || cantidad <= 0)
-    return res.status(400).json({ message: "Cantidad inválida" });
+    return res.status(400).json({ message: "Cantidad inválida." });
 
-  const codigos = leerCSV(CODIGOS_FILE);
-  for (let i = 0; i < cantidad; i++) {
-    codigos.push({
-      codigo: Math.random().toString(36).substring(2, 8).toUpperCase(),
-      usado: false,
-    });
-  }
-  escribirCSV(CODIGOS_FILE, codigos);
-  res.json({ message: "Códigos generados correctamente ✅" });
+  const codigos = readJSON(codigosPath);
+  const nuevos = Array.from({ length: cantidad }).map(() => ({
+    codigo: Math.random().toString(36).substring(2, 8).toUpperCase(),
+    usado: false,
+  }));
+
+  const actualizados = [...codigos, ...nuevos];
+  writeJSON(codigosPath, actualizados);
+
+  res.json({ message: "🎟️ Códigos generados correctamente", nuevos });
 });
 
 // ==============================
 // 🔹 Listar códigos
 // ==============================
 app.get("/api/codigos", (req, res) => {
-  const codigos = leerCSV(CODIGOS_FILE);
+  const codigos = readJSON(codigosPath);
   res.json(codigos);
 });
 
 // ==============================
-// 🚀 Iniciar servidor
+// 🚀 Servidor
 // ==============================
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
 });
