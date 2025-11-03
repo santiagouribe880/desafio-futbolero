@@ -1,3 +1,35 @@
+// server.js
+import express from "express";
+import fs from "fs";
+import path from "path";
+import bodyParser from "body-parser";
+import cors from "cors";
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static("public"));
+app.use(express.static("./")); // sirve tus HTML directamente
+
+// Ruta de los archivos JSON
+const dataDir = path.join(process.cwd(), "data");
+const jornadasPath = path.join(dataDir, "jornadas.json");
+const codigosPath = path.join(dataDir, "codigos.json");
+const resultadosPath = path.join(dataDir, "resultados.json");
+
+// ✅ Función para leer y escribir JSON
+function readJSON(filePath) {
+  if (!fs.existsSync(filePath)) return [];
+  const data = fs.readFileSync(filePath, "utf-8");
+  return data ? JSON.parse(data) : [];
+}
+
+function writeJSON(filePath, data) {
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
 // =========================
 // 🔹 RUTAS DE JORNADAS
 // =========================
@@ -57,4 +89,48 @@ app.get("/api/jornada-activa", (req, res) => {
   const jornadas = readJSON(jornadasPath);
   const activa = jornadas.find((j) => j.activa);
   res.json(activa || null);
+});
+
+// =========================
+// 🔹 RUTAS DE CÓDIGOS
+// =========================
+
+// Generar nuevos códigos
+app.post("/api/codigos", (req, res) => {
+  const { cantidad } = req.body;
+  if (!cantidad || cantidad <= 0)
+    return res.status(400).json({ message: "Cantidad inválida" });
+
+  const codigos = readJSON(codigosPath);
+  const nuevos = Array.from({ length: cantidad }).map(() => {
+    return {
+      codigo: Math.random().toString(36).substring(2, 8).toUpperCase(),
+      usado: false,
+    };
+  });
+
+  const actualizados = [...codigos, ...nuevos];
+  writeJSON(codigosPath, actualizados);
+
+  res.json({ message: "Códigos generados", nuevos });
+});
+
+// Listar todos los códigos
+app.get("/api/codigos", (req, res) => {
+  const codigos = readJSON(codigosPath);
+  res.json(codigos);
+});
+
+// =========================
+// 🔹 RESULTADOS (opcional futuro)
+// =========================
+app.post("/api/resultados", (req, res) => {
+  const resultados = req.body;
+  writeJSON(resultadosPath, resultados);
+  res.json({ message: "Resultados guardados" });
+});
+
+// =========================
+app.listen(PORT, () => {
+  console.log(`✅ Servidor activo en http://localhost:${PORT}`);
 });
