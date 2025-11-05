@@ -6,11 +6,14 @@
   <title>Administrador - Desafío Futbolero</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div class="admin-container">
     <h1>⚽ Panel Administrador - Desafío Futbolero</h1>
 
-    <!-- Crear jornada -->
+    <!-- ============================== -->
+    <!-- 📅 CREAR NUEVA JORNADA -->
+    <!-- ============================== -->
     <section class="card">
       <h2>📅 Crear Nueva Jornada</h2>
       <form id="formJornada">
@@ -26,27 +29,40 @@
           </div>
         </div>
 
-        <button type="button" id="agregarPartido">➕ Agregar Partido</button>
-        <button type="submit">💾 Guardar Jornada</button>
+        <div class="botones-form">
+          <button type="button" id="agregarPartido">➕ Agregar Partido</button>
+          <button type="submit" class="btn-guardar">💾 Guardar Jornada</button>
+        </div>
       </form>
     </section>
 
-    <!-- Activar jornada -->
+    <!-- ============================== -->
+    <!-- ✅ ACTIVAR JORNADA -->
+    <!-- ============================== -->
     <section class="card">
       <h2>✅ Activar Jornada</h2>
-      <select id="selectJornada"></select>
-      <button id="activarJornada">Activar</button>
+      <p>Selecciona una jornada guardada para activar:</p>
+      <div class="activar-container">
+        <select id="selectJornada"></select>
+        <button id="activarJornada">🔓 Activar</button>
+      </div>
     </section>
 
-    <!-- Generar códigos -->
+    <!-- ============================== -->
+    <!-- 🎟️ GENERAR CÓDIGOS -->
+    <!-- ============================== -->
     <section class="card">
       <h2>🎟️ Generar Códigos de Acceso</h2>
-      <input type="number" id="cantidadCodigos" placeholder="Cantidad de códigos" min="1" />
-      <button id="generarCodigos">Generar</button>
-      <div id="listaCodigos"></div>
+      <div class="codigo-container">
+        <input type="number" id="cantidadCodigos" placeholder="Cantidad de códigos" min="1" />
+        <button id="generarCodigos">Generar</button>
+      </div>
+      <div id="listaCodigos" class="lista-codigos"></div>
     </section>
 
-    <!-- Mensajes -->
+    <!-- ============================== -->
+    <!-- 💬 MENSAJES -->
+    <!-- ============================== -->
     <div id="mensaje" class="mensaje"></div>
   </div>
 
