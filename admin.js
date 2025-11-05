@@ -1,6 +1,9 @@
+// ==============================
+// 🌐 Configuración base
+// ==============================
 const API_URL = window.location.origin;
 
-// Elementos
+// Elementos del DOM
 const formJornada = document.getElementById("formJornada");
 const partidosContainer = document.getElementById("partidosContainer");
 const agregarPartidoBtn = document.getElementById("agregarPartido");
@@ -12,12 +15,15 @@ const listaCodigos = document.getElementById("listaCodigos");
 const mensaje = document.getElementById("mensaje");
 
 // ==============================
-// 🔹 Mostrar mensaje
+// 🔹 Mostrar mensajes en pantalla
 // ==============================
 function mostrarMensaje(texto, tipo = "exito") {
   mensaje.textContent = texto;
   mensaje.className = `mensaje ${tipo}`;
-  setTimeout(() => (mensaje.textContent = ""), 4000);
+  setTimeout(() => {
+    mensaje.textContent = "";
+    mensaje.className = "mensaje";
+  }, 4000);
 }
 
 // ==============================
@@ -44,8 +50,8 @@ formJornada.addEventListener("submit", async (e) => {
   const premio = document.getElementById("premio").value.trim();
 
   const partidos = Array.from(document.querySelectorAll(".partido")).map((p) => ({
-    local: p.querySelector(".local").value,
-    visitante: p.querySelector(".visitante").value,
+    local: p.querySelector(".local").value.trim(),
+    visitante: p.querySelector(".visitante").value.trim(),
     fecha: p.querySelector(".fechaPartido").value,
   }));
 
@@ -69,19 +75,28 @@ formJornada.addEventListener("submit", async (e) => {
       mostrarMensaje(data.message || "Error al crear la jornada", "error");
     }
   } catch (err) {
+    console.error("❌ Error al crear jornada:", err);
     mostrarMensaje("Error al conectar con el servidor", "error");
   }
 });
 
 // ==============================
-// 🔹 Cargar jornadas
+// 🔹 Cargar jornadas existentes
 // ==============================
 async function cargarJornadas() {
   try {
     const res = await fetch(`${API_URL}/api/jornadas`);
+    if (!res.ok) throw new Error("No se pudieron cargar las jornadas");
     const jornadas = await res.json();
 
     selectJornada.innerHTML = "";
+    if (jornadas.length === 0) {
+      const opt = document.createElement("option");
+      opt.textContent = "No hay jornadas disponibles";
+      selectJornada.appendChild(opt);
+      return;
+    }
+
     jornadas.forEach((j) => {
       const option = document.createElement("option");
       option.value = j.id;
@@ -89,13 +104,15 @@ async function cargarJornadas() {
       selectJornada.appendChild(option);
     });
   } catch (error) {
+    console.error(error);
     mostrarMensaje("Error al cargar jornadas", "error");
   }
 }
+
 cargarJornadas();
 
 // ==============================
-// 🔹 Activar jornada
+// 🔹 Activar jornada seleccionada
 // ==============================
 activarJornadaBtn.addEventListener("click", async () => {
   const id = selectJornada.value;
@@ -111,7 +128,8 @@ activarJornadaBtn.addEventListener("click", async () => {
     } else {
       mostrarMensaje(data.message || "Error al activar jornada", "error");
     }
-  } catch {
+  } catch (err) {
+    console.error("❌ Error al activar jornada:", err);
     mostrarMensaje("Error al conectar con el servidor", "error");
   }
 });
@@ -124,25 +142,47 @@ generarCodigosBtn.addEventListener("click", async () => {
   if (!cantidad || cantidad <= 0)
     return mostrarMensaje("Cantidad inválida", "error");
 
-  const res = await fetch(`${API_URL}/api/codigos`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cantidad }),
-  });
+  try {
+    const res = await fetch(`${API_URL}/api/codigos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cantidad }),
+    });
 
-  const data = await res.json();
-  mostrarMensaje(data.message || "Códigos generados correctamente");
-  mostrarCodigos();
+    const data = await res.json();
+    if (res.ok) {
+      mostrarMensaje("🎟️ Códigos generados correctamente");
+      mostrarCodigos();
+    } else {
+      mostrarMensaje(data.message || "Error al generar códigos", "error");
+    }
+  } catch (err) {
+    console.error("❌ Error al generar códigos:", err);
+    mostrarMensaje("Error al conectar con el servidor", "error");
+  }
 });
 
 // ==============================
-// 🔹 Mostrar códigos
+// 🔹 Mostrar lista de códigos
 // ==============================
 async function mostrarCodigos() {
-  const res = await fetch(`${API_URL}/api/codigos`);
-  const codigos = await res.json();
-  listaCodigos.innerHTML =
-    "<h3>Códigos Generados:</h3>" +
-    codigos.map((c) => `<div>${c.codigo} ${c.usado ? "(Usado)" : ""}</div>`).join("");
+  try {
+    const res = await fetch(`${API_URL}/api/codigos`);
+    if (!res.ok) throw new Error("Error al cargar los códigos");
+    const codigos = await res.json();
+
+    listaCodigos.innerHTML =
+      "<h3>Códigos Generados:</h3>" +
+      codigos
+        .map(
+          (c) =>
+            `<div>${c.codigo} ${c.usado ? "<span>(Usado)</span>" : "<span>(Disponible)</span>"}</div>`
+        )
+        .join("");
+  } catch (err) {
+    console.error("❌ Error al mostrar códigos:", err);
+    mostrarMensaje("Error al cargar los códigos", "error");
+  }
 }
+
 mostrarCodigos();
