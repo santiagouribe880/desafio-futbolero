@@ -17,10 +17,10 @@ const __dirname = path.dirname(__filename);
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static("public"));
+app.use(express.static(__dirname)); // ✅ sirve los archivos desde la raíz
 
 // ==============================
-// 🗂️ Rutas de datos
+// 🗂️ Archivos de datos
 // ==============================
 const dataDir = path.join(__dirname, "data");
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
@@ -97,10 +97,8 @@ app.post("/api/activar/:id", (req, res) => {
     return res.status(400).json({ message: "No hay jornadas creadas." });
   }
 
-  // Desactivar todas
   jornadas.forEach((j) => (j.activa = false));
 
-  // Activar la jornada seleccionada
   const jornada = jornadas.find((j) => j.id === id);
   if (!jornada) {
     return res.status(404).json({ message: "Jornada no encontrada." });
