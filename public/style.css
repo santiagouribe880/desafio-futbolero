@@ -1,0 +1,282 @@
+/* style.css - Desafío Futbolero */
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap");
+
+:root {
+  --primario: #007bff;
+  --secundario: #0056b3;
+  --fondo: #f5f7fa;
+  --blanco: #ffffff;
+  --texto: #333;
+  --sombra: rgba(0, 0, 0, 0.1);
+  --borde: #ddd;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #f3f4f6;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-container {
+  max-width: 800px;
+  margin: 40px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+h1, h2 {
+  text-align: center;
+  color: #222;
+}
+
+.card {
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+input, select, button {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-principal {
+  background: #007bff;
+  color: white;
+  border: none;
+}
+
+.btn-principal:hover {
+  background: #0056b3;
+}
+
+.btn-secundario {
+  background: #6c757d;
+  color: white;
+  border: none;
+}
+
+.btn-secundario:hover {
+  background: #5a6268;
+}
+
+.mensaje {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.mensaje.exito {
+  background: #d4edda;
+  color: #155724;
+}
+
+.mensaje.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.lista-codigos div {
+  background: #eef;
+  padding: 6px;
+  margin: 4px 0;
+  border-radius: 6px;
+  font-family: monospace;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+header h1 {
+  font-size: 2rem;
+  margin-bottom: 0;
+}
+
+.subtitulo {
+  color: #666;
+  font-size: 1rem;
+}
+
+.card {
+  background-color: var(--blanco);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px var(--sombra);
+}
+
+input, select, button {
+  font-family: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  margin: 5px 0;
+}
+
+button {
+  background-color: var(--primario);
+  color: var(--blanco);
+  cursor: pointer;
+  font-weight: 600;
+  border: none;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--secundario);
+}
+
+/* ---- ADMIN PANEL ---- */
+#partidosContainer .partido {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.mensaje {
+  text-align: center;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.mensaje.exito {
+  color: green;
+}
+.mensaje.error {
+  color: red;
+}
+
+/* ---- PARTICIPANTE ---- */
+.partido {
+  border-bottom: 1px solid var(--borde);
+  padding: 10px 0;
+}
+
+.partido:last-child {
+  border-bottom: none;
+}
+
+.equipos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.equipo.local {
+  color: var(--primario);
+}
+
+.equipo.visitante {
+  color: #d9534f;
+}
+
+.vs {
+  margin: 0 10px;
+  color: #666;
+}
+
+.detalles {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
+
+.pronostico {
+  width: 120px;
+  text-align: center;
+}
+
+/* ---- FOOTER ---- */
+footer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 20px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .equipos {
+    flex-direction: column;
+  }
+
+  .detalles {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .pronostico {
+    width: 100%;
+.main-container {
+  max-width: 800px;
+  margin: 40px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.oculto {
+  display: none;
+}
+
+.partido {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin: 10px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.partido .pronostico {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.partido input[type="number"] {
+  width: 60px;
+  text-align: center;
+}
+
+.premio {
+  color: #0069d9;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+    
+  }
+}
