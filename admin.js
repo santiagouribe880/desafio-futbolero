@@ -1,9 +1,13 @@
-// ==============================
-// ⚙️ Configuración general
-// ==============================
-const API_URL = window.location.origin;
+// admin.js
 
-// Elementos del DOM
+// Detectar si estamos en Render o local
+const API_URL = window.location.origin.includes("render.com")
+  ? "https://desafio-futbolero.onrender.com" // 👈 tu dominio de Render
+  : "http://localhost:3000";
+
+// ==============================
+// 🔹 Elementos del DOM
+// ==============================
 const formJornada = document.getElementById("formJornada");
 const partidosContainer = document.getElementById("partidosContainer");
 const agregarPartidoBtn = document.getElementById("agregarPartido");
@@ -15,19 +19,16 @@ const listaCodigos = document.getElementById("listaCodigos");
 const mensaje = document.getElementById("mensaje");
 
 // ==============================
-// 🔹 Mostrar mensajes
+// 🔹 Mostrar mensaje
 // ==============================
 function mostrarMensaje(texto, tipo = "exito") {
   mensaje.textContent = texto;
   mensaje.className = `mensaje ${tipo}`;
-  setTimeout(() => {
-    mensaje.textContent = "";
-    mensaje.className = "mensaje";
-  }, 4000);
+  setTimeout(() => (mensaje.textContent = ""), 4000);
 }
 
 // ==============================
-// 🔹 Agregar partido dinámicamente
+// 🔹 Agregar partido
 // ==============================
 agregarPartidoBtn.addEventListener("click", () => {
   const div = document.createElement("div");
@@ -56,7 +57,7 @@ formJornada.addEventListener("submit", async (e) => {
   }));
 
   if (!nombre || !premio || partidos.length === 0) {
-    return mostrarMensaje("Completa todos los campos requeridos.", "error");
+    return mostrarMensaje("Completa todos los campos y agrega al menos un partido", "error");
   }
 
   try {
@@ -66,15 +67,15 @@ formJornada.addEventListener("submit", async (e) => {
       body: JSON.stringify({ nombre, premio, partidos }),
     });
 
-    if (!res.ok) throw new Error("Error en el servidor");
-    const data = await res.json();
+    if (!res.ok) throw new Error("Fallo en la conexión con el servidor");
 
-    mostrarMensaje(data.message, "exito");
+    const data = await res.json();
+    mostrarMensaje("✅ Jornada creada correctamente");
     formJornada.reset();
     cargarJornadas();
   } catch (err) {
-    console.error(err);
-    mostrarMensaje("❌ Error al conectar con el servidor.", "error");
+    console.error("❌ Error:", err);
+    mostrarMensaje("Error al conectar con el servidor", "error");
   }
 });
 
@@ -85,9 +86,9 @@ async function cargarJornadas() {
   try {
     const res = await fetch(`${API_URL}/api/jornadas`);
     if (!res.ok) throw new Error("Error al obtener jornadas");
-    const jornadas = await res.json();
 
-    selectJornada.innerHTML = "<option value=''>Selecciona una jornada</option>";
+    const jornadas = await res.json();
+    selectJornada.innerHTML = "";
 
     jornadas.forEach((j) => {
       const option = document.createElement("option");
@@ -96,8 +97,8 @@ async function cargarJornadas() {
       selectJornada.appendChild(option);
     });
   } catch (err) {
-    console.error(err);
-    mostrarMensaje("Error al cargar jornadas.", "error");
+    console.error("❌ Error cargando jornadas:", err);
+    mostrarMensaje("Error al cargar jornadas", "error");
   }
 }
 cargarJornadas();
@@ -107,18 +108,18 @@ cargarJornadas();
 // ==============================
 activarJornadaBtn.addEventListener("click", async () => {
   const id = selectJornada.value;
-  if (!id) return mostrarMensaje("Selecciona una jornada para activar.", "error");
+  if (!id) return mostrarMensaje("Selecciona una jornada", "error");
 
   try {
     const res = await fetch(`${API_URL}/api/activar/${id}`, { method: "POST" });
     if (!res.ok) throw new Error("Error al activar jornada");
-    const data = await res.json();
 
-    mostrarMensaje(data.message, "exito");
+    const data = await res.json();
+    mostrarMensaje("✅ Jornada activada correctamente");
     cargarJornadas();
   } catch (err) {
-    console.error(err);
-    mostrarMensaje("Error al conectar con el servidor.", "error");
+    console.error("❌ Error al activar jornada:", err);
+    mostrarMensaje("Error al conectar con el servidor", "error");
   }
 });
 
@@ -128,7 +129,7 @@ activarJornadaBtn.addEventListener("click", async () => {
 generarCodigosBtn.addEventListener("click", async () => {
   const cantidad = parseInt(cantidadCodigos.value);
   if (!cantidad || cantidad <= 0)
-    return mostrarMensaje("Cantidad inválida.", "error");
+    return mostrarMensaje("Cantidad inválida", "error");
 
   try {
     const res = await fetch(`${API_URL}/api/codigos`, {
@@ -137,14 +138,14 @@ generarCodigosBtn.addEventListener("click", async () => {
       body: JSON.stringify({ cantidad }),
     });
 
-    if (!res.ok) throw new Error("Error al generar códigos");
-    const data = await res.json();
+    if (!res.ok) throw new Error("Error generando códigos");
 
-    mostrarMensaje(data.message, "exito");
+    const data = await res.json();
+    mostrarMensaje(data.message || "Códigos generados correctamente");
     mostrarCodigos();
   } catch (err) {
-    console.error(err);
-    mostrarMensaje("Error al conectar con el servidor.", "error");
+    console.error("❌ Error generando códigos:", err);
+    mostrarMensaje("Error al conectar con el servidor", "error");
   }
 });
 
@@ -154,17 +155,15 @@ generarCodigosBtn.addEventListener("click", async () => {
 async function mostrarCodigos() {
   try {
     const res = await fetch(`${API_URL}/api/codigos`);
-    if (!res.ok) throw new Error("Error al obtener códigos");
-    const codigos = await res.json();
+    if (!res.ok) throw new Error("Error obteniendo códigos");
 
+    const codigos = await res.json();
     listaCodigos.innerHTML =
       "<h3>Códigos Generados:</h3>" +
-      codigos
-        .map((c) => `<div>${c.codigo} ${c.usado ? "(Usado)" : ""}</div>`)
-        .join("");
+      codigos.map((c) => `<div>${c.codigo} ${c.usado ? "(Usado)" : ""}</div>`).join("");
   } catch (err) {
-    console.error(err);
-    mostrarMensaje("Error al cargar códigos.", "error");
+    console.error("❌ Error mostrando códigos:", err);
+    mostrarMensaje("Error al mostrar códigos", "error");
   }
 }
 mostrarCodigos();
