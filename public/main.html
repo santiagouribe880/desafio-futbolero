@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Desafío Futbolero - Participantes</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="main-container">
+    <h1>⚽ Desafío Futbolero</h1>
+
+    <!-- Ingreso de código -->
+    <section class="card">
+      <h2>🔑 Ingresar al Desafío</h2>
+      <p>Introduce tu código de acceso para participar en la jornada activa.</p>
+      <input type="text" id="codigoAcceso" placeholder="Ej: XG7FJ9" maxlength="6" />
+      <button id="btnAcceder" class="btn-principal">Ingresar</button>
+    </section>
+
+    <!-- Información de la jornada -->
+    <section id="jornadaActiva" class="card oculto">
+      <h2 id="nombreJornada"></h2>
+      <p id="premioJornada" class="premio"></p>
+
+      <div id="listaPartidos"></div>
+
+      <button id="btnEnviar" class="btn-principal">📨 Enviar Pronósticos</button>
+    </section>
+
+    <!-- Mensajes -->
+    <div id="mensaje" class="mensaje"></div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
