@@ -17,7 +17,9 @@ const __dirname = path.dirname(__filename);
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(__dirname)); // ✅ sirve los archivos desde la raíz
+
+// ✅ Servir archivos estáticos desde la carpeta /public
+app.use(express.static(path.join(__dirname, "public")));
 
 // ==============================
 // 🗂️ Archivos de datos
@@ -97,8 +99,10 @@ app.post("/api/activar/:id", (req, res) => {
     return res.status(400).json({ message: "No hay jornadas creadas." });
   }
 
+  // Desactivar todas
   jornadas.forEach((j) => (j.activa = false));
 
+  // Activar la jornada seleccionada
   const jornada = jornadas.find((j) => j.id === id);
   if (!jornada) {
     return res.status(404).json({ message: "Jornada no encontrada." });
@@ -145,6 +149,14 @@ app.post("/api/codigos", (req, res) => {
 app.get("/api/codigos", (req, res) => {
   const codigos = readJSON(codigosPath);
   res.json(codigos);
+});
+
+// ==============================
+// 🔹 Fallback para Render
+// ==============================
+// Si Render no encuentra la ruta, siempre devuelve admin.html
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
 
 // ==============================
