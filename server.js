@@ -28,6 +28,9 @@ if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
 const jornadasPath = path.join(dataDir, "jornadas.json");
 const codigosPath = path.join(dataDir, "codigos.json");
 
+// ==============================
+// ⚙️ Funciones auxiliares
+// ==============================
 function readJSON(file) {
   if (!fs.existsSync(file)) return [];
   try {
@@ -62,6 +65,7 @@ app.post("/api/jornada", (req, res) => {
       resultado: null,
     })),
   };
+
   jornadas.push(nueva);
   writeJSON(jornadasPath, jornadas);
   res.json({ message: "✅ Jornada creada con éxito", jornada: nueva });
@@ -78,9 +82,11 @@ app.get("/api/jornadas", (req, res) => res.json(readJSON(jornadasPath)));
 app.post("/api/activar/:id", (req, res) => {
   const { id } = req.params;
   const jornadas = readJSON(jornadasPath);
+
   jornadas.forEach((j) => (j.activa = false));
   const jornada = jornadas.find((j) => j.id === id);
   if (!jornada) return res.status(404).json({ message: "No encontrada" });
+
   jornada.activa = true;
   writeJSON(jornadasPath, jornadas);
   res.json({ message: "✅ Jornada activada", jornada });
@@ -107,6 +113,7 @@ app.post("/api/codigos", (req, res) => {
     codigo: Math.random().toString(36).substring(2, 8).toUpperCase(),
     usado: false,
   }));
+
   writeJSON(codigosPath, [...codigos, ...nuevos]);
   res.json({ message: "🎟️ Códigos generados", nuevos });
 });
@@ -114,6 +121,22 @@ app.post("/api/codigos", (req, res) => {
 app.get("/api/codigos", (req, res) => res.json(readJSON(codigosPath)));
 
 // ==============================
-// 🚀 Servidor
+// 🔹 Rutas de interfaz (Frontend)
 // ==============================
-app.listen(PORT, () => console.log(`✅ Servidor activo en puerto ${PORT}`));
+
+// Panel del administrador
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
+
+// Página principal de los jugadores
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// ==============================
+// 🚀 Iniciar servidor
+// ==============================
+app.listen(PORT, () =>
+  console.log(`✅ Servidor activo en puerto ${PORT}`)
+);
