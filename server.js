@@ -17,9 +17,7 @@ const __dirname = path.dirname(__filename);
 
 app.use(cors());
 app.use(bodyParser.json());
-
-// ✅ Servir los archivos estáticos del frontend
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"))); // ✅ sirve los archivos desde /public
 
 // ==============================
 // 🗂️ Archivos de datos
@@ -30,14 +28,10 @@ if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
 const jornadasPath = path.join(dataDir, "jornadas.json");
 const codigosPath = path.join(dataDir, "codigos.json");
 
-// ==============================
-// ⚙️ Funciones auxiliares
-// ==============================
 function readJSON(file) {
   if (!fs.existsSync(file)) return [];
-  const data = fs.readFileSync(file, "utf-8");
   try {
-    return JSON.parse(data);
+    return JSON.parse(fs.readFileSync(file, "utf-8"));
   } catch {
     return [];
   }
@@ -52,41 +46,31 @@ function writeJSON(file, data) {
 // ==============================
 app.post("/api/jornada", (req, res) => {
   const { nombre, premio, partidos } = req.body;
-
-  if (!nombre || !premio || !partidos || partidos.length === 0) {
-    return res
-      .status(400)
-      .json({ message: "Datos incompletos para crear la jornada." });
-  }
+  if (!nombre || !premio || !partidos?.length)
+    return res.status(400).json({ message: "Datos incompletos" });
 
   const jornadas = readJSON(jornadasPath);
-
-  const nuevaJornada = {
+  const nueva = {
     id: uuidv4(),
     nombre,
     premio,
     activa: false,
     partidos: partidos.map((p) => ({
-      local: p.local.trim(),
-      visitante: p.visitante.trim(),
-      fecha: p.fecha ? new Date(p.fecha).toISOString() : null,
+      local: p.local,
+      visitante: p.visitante,
+      fecha: p.fecha,
       resultado: null,
     })),
   };
-
-  jornadas.push(nuevaJornada);
+  jornadas.push(nueva);
   writeJSON(jornadasPath, jornadas);
-
-  res.json({ message: "✅ Jornada creada con éxito", jornada: nuevaJornada });
+  res.json({ message: "✅ Jornada creada con éxito", jornada: nueva });
 });
 
 // ==============================
 // 🔹 Obtener todas las jornadas
 // ==============================
-app.get("/api/jornadas", (req, res) => {
-  const jornadas = readJSON(jornadasPath);
-  res.json(jornadas);
-});
+app.get("/api/jornadas", (req, res) => res.json(readJSON(jornadasPath)));
 
 // ==============================
 // 🔹 Activar jornada
@@ -94,31 +78,20 @@ app.get("/api/jornadas", (req, res) => {
 app.post("/api/activar/:id", (req, res) => {
   const { id } = req.params;
   const jornadas = readJSON(jornadasPath);
-
-  if (!jornadas.length) {
-    return res.status(400).json({ message: "No hay jornadas creadas." });
-  }
-
   jornadas.forEach((j) => (j.activa = false));
-
   const jornada = jornadas.find((j) => j.id === id);
-  if (!jornada) {
-    return res.status(404).json({ message: "Jornada no encontrada." });
-  }
-
+  if (!jornada) return res.status(404).json({ message: "No encontrada" });
   jornada.activa = true;
   writeJSON(jornadasPath, jornadas);
-
-  res.json({ message: "✅ Jornada activada correctamente", jornada });
+  res.json({ message: "✅ Jornada activada", jornada });
 });
 
 // ==============================
 // 🔹 Obtener jornada activa
 // ==============================
 app.get("/api/jornada-activa", (req, res) => {
-  const jornadas = readJSON(jornadasPath);
-  const activa = jornadas.find((j) => j.activa);
-  res.json(activa || null);
+  const j = readJSON(jornadasPath).find((x) => x.activa);
+  res.json(j || null);
 });
 
 // ==============================
@@ -127,31 +100,20 @@ app.get("/api/jornada-activa", (req, res) => {
 app.post("/api/codigos", (req, res) => {
   const { cantidad } = req.body;
   if (!cantidad || cantidad <= 0)
-    return res.status(400).json({ message: "Cantidad inválida." });
+    return res.status(400).json({ message: "Cantidad inválida" });
 
   const codigos = readJSON(codigosPath);
   const nuevos = Array.from({ length: cantidad }).map(() => ({
     codigo: Math.random().toString(36).substring(2, 8).toUpperCase(),
     usado: false,
   }));
-
-  const actualizados = [...codigos, ...nuevos];
-  writeJSON(codigosPath, actualizados);
-
-  res.json({ message: "🎟️ Códigos generados correctamente", nuevos });
+  writeJSON(codigosPath, [...codigos, ...nuevos]);
+  res.json({ message: "🎟️ Códigos generados", nuevos });
 });
 
-// ==============================
-// 🔹 Listar códigos
-// ==============================
-app.get("/api/codigos", (req, res) => {
-  const codigos = readJSON(codigosPath);
-  res.json(codigos);
-});
+app.get("/api/codigos", (req, res) => res.json(readJSON(codigosPath)));
 
 // ==============================
 // 🚀 Servidor
 // ==============================
-app.listen(PORT, () => {
-  console.log(`✅ Servidor corriendo en puerto ${PORT}`);
-});
+app.listen(PORT, () => console.log(`✅ Servidor activo en puerto ${PORT}`));
