@@ -1,59 +1,32 @@
 import express from "express";
-import fs from "fs";
-import path from "path";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { v4 as uuidv4 } from "uuid";
-import { fileURLToPath } from "url";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==============================
-// 📁 Configuración inicial
-// ==============================
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public"))); // ✅ sirve los archivos desde /public
+app.use(express.static("public"));
 
 // ==============================
-// 🗂️ Archivos de datos
+// 🧠 Almacenamiento en memoria
 // ==============================
-const dataDir = path.join(__dirname, "data");
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
-
-const jornadasPath = path.join(dataDir, "jornadas.json");
-const codigosPath = path.join(dataDir, "codigos.json");
-
-// ==============================
-// ⚙️ Funciones auxiliares
-// ==============================
-function readJSON(file) {
-  if (!fs.existsSync(file)) return [];
-  try {
-    return JSON.parse(fs.readFileSync(file, "utf-8"));
-  } catch {
-    return [];
-  }
-}
-
-function writeJSON(file, data) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2));
-}
+let jornadas = [];
+let codigos = [];
 
 // ==============================
 // 🔹 Crear nueva jornada
 // ==============================
 app.post("/api/jornada", (req, res) => {
   const { nombre, premio, partidos } = req.body;
-  if (!nombre || !premio || !partidos?.length)
-    return res.status(400).json({ message: "Datos incompletos" });
 
-  const jornadas = readJSON(jornadasPath);
-  const nueva = {
+  if (!nombre || !premio || !partidos?.length) {
+    return res.status(400).json({ message: "Datos incompletos" });
+  }
+
+  const nuevaJornada = {
     id: uuidv4(),
     nombre,
     premio,
@@ -66,29 +39,24 @@ app.post("/api/jornada", (req, res) => {
     })),
   };
 
-  jornadas.push(nueva);
-  writeJSON(jornadasPath, jornadas);
-  res.json({ message: "✅ Jornada creada con éxito", jornada: nueva });
+  jornadas.push(nuevaJornada);
+  res.json({ message: "✅ Jornada creada con éxito", jornada: nuevaJornada });
 });
 
 // ==============================
 // 🔹 Obtener todas las jornadas
 // ==============================
-app.get("/api/jornadas", (req, res) => res.json(readJSON(jornadasPath)));
+app.get("/api/jornadas", (req, res) => res.json(jornadas));
 
 // ==============================
 // 🔹 Activar jornada
 // ==============================
 app.post("/api/activar/:id", (req, res) => {
   const { id } = req.params;
-  const jornadas = readJSON(jornadasPath);
-
   jornadas.forEach((j) => (j.activa = false));
   const jornada = jornadas.find((j) => j.id === id);
   if (!jornada) return res.status(404).json({ message: "No encontrada" });
-
   jornada.activa = true;
-  writeJSON(jornadasPath, jornadas);
   res.json({ message: "✅ Jornada activada", jornada });
 });
 
@@ -96,8 +64,8 @@ app.post("/api/activar/:id", (req, res) => {
 // 🔹 Obtener jornada activa
 // ==============================
 app.get("/api/jornada-activa", (req, res) => {
-  const j = readJSON(jornadasPath).find((x) => x.activa);
-  res.json(j || null);
+  const activa = jornadas.find((j) => j.activa);
+  res.json(activa || null);
 });
 
 // ==============================
@@ -108,35 +76,18 @@ app.post("/api/codigos", (req, res) => {
   if (!cantidad || cantidad <= 0)
     return res.status(400).json({ message: "Cantidad inválida" });
 
-  const codigos = readJSON(codigosPath);
   const nuevos = Array.from({ length: cantidad }).map(() => ({
     codigo: Math.random().toString(36).substring(2, 8).toUpperCase(),
     usado: false,
   }));
 
-  writeJSON(codigosPath, [...codigos, ...nuevos]);
+  codigos.push(...nuevos);
   res.json({ message: "🎟️ Códigos generados", nuevos });
 });
 
-app.get("/api/codigos", (req, res) => res.json(readJSON(codigosPath)));
+app.get("/api/codigos", (req, res) => res.json(codigos));
 
 // ==============================
-// 🔹 Rutas de interfaz (Frontend)
+// 🚀 Servidor
 // ==============================
-
-// Panel del administrador
-app.get("/admin", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "admin.html"));
-});
-
-// Página principal de los jugadores
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// ==============================
-// 🚀 Iniciar servidor
-// ==============================
-app.listen(PORT, () =>
-  console.log(`✅ Servidor activo en puerto ${PORT}`)
-);
+app.listen(PORT, () => console.log(`✅ Servidor activo en puerto ${PORT}`));
