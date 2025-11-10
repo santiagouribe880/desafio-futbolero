@@ -1,5 +1,4 @@
 import express from "express";
-import fs from "fs";
 import path from "path";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -17,14 +16,14 @@ const __dirname = path.dirname(__filename);
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public"))); // sirve los archivos desde /public
+
+// 👉 Asegura que los archivos del frontend estén accesibles
+app.use(express.static(path.join(__dirname, "public")));
 
 // ==============================
-// 🗂️ Estructura de almacenamiento temporal en memoria
+// 🗂️ Almacenamiento temporal en memoria
 // ==============================
-// 👉 No se usan archivos CSV ni JSON externos.
-// 👉 Todo se almacena en memoria (se reinicia al reiniciar el servidor).
-
+// (no se usa CSV ni JSON, se reinicia al reiniciar Render)
 let jornadas = [];
 let codigos = [];
 
@@ -33,7 +32,8 @@ let codigos = [];
 // ==============================
 app.post("/api/jornada", (req, res) => {
   const { nombre, premio, partidos } = req.body;
-  if (!nombre || !premio || !partidos?.length) {
+
+  if (!nombre || !premio || !Array.isArray(partidos) || partidos.length === 0) {
     return res.status(400).json({ message: "Datos incompletos para crear la jornada." });
   }
 
@@ -67,8 +67,8 @@ app.get("/api/jornadas", (req, res) => {
 app.post("/api/activar/:id", (req, res) => {
   const { id } = req.params;
   jornadas.forEach((j) => (j.activa = false));
-  const jornada = jornadas.find((j) => j.id === id);
 
+  const jornada = jornadas.find((j) => j.id === id);
   if (!jornada) {
     return res.status(404).json({ message: "Jornada no encontrada." });
   }
@@ -110,7 +110,7 @@ app.get("/api/codigos", (req, res) => {
 });
 
 // ==============================
-// 🔹 Rutas para servir HTMLs
+// 🔹 Servir las páginas HTML del frontend
 // ==============================
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -121,7 +121,7 @@ app.get("/admin", (req, res) => {
 });
 
 // ==============================
-// 🚀 Servidor
+// 🚀 Iniciar el servidor
 // ==============================
 app.listen(PORT, () => {
   console.log(`✅ Servidor activo en puerto ${PORT}`);
