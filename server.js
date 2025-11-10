@@ -1,18 +1,30 @@
 import express from "express";
+import fs from "fs";
+import path from "path";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { v4 as uuidv4 } from "uuid";
+import { fileURLToPath } from "url";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ==============================
+// 📁 Configuración inicial
+// ==============================
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public"))); // sirve los archivos desde /public
 
 // ==============================
-// 🧠 Almacenamiento en memoria
+// 🗂️ Estructura de almacenamiento temporal en memoria
 // ==============================
+// 👉 No se usan archivos CSV ni JSON externos.
+// 👉 Todo se almacena en memoria (se reinicia al reiniciar el servidor).
+
 let jornadas = [];
 let codigos = [];
 
@@ -21,12 +33,11 @@ let codigos = [];
 // ==============================
 app.post("/api/jornada", (req, res) => {
   const { nombre, premio, partidos } = req.body;
-
   if (!nombre || !premio || !partidos?.length) {
-    return res.status(400).json({ message: "Datos incompletos" });
+    return res.status(400).json({ message: "Datos incompletos para crear la jornada." });
   }
 
-  const nuevaJornada = {
+  const nueva = {
     id: uuidv4(),
     nombre,
     premio,
@@ -39,14 +50,16 @@ app.post("/api/jornada", (req, res) => {
     })),
   };
 
-  jornadas.push(nuevaJornada);
-  res.json({ message: "✅ Jornada creada con éxito", jornada: nuevaJornada });
+  jornadas.push(nueva);
+  res.json({ message: "✅ Jornada creada con éxito", jornada: nueva });
 });
 
 // ==============================
 // 🔹 Obtener todas las jornadas
 // ==============================
-app.get("/api/jornadas", (req, res) => res.json(jornadas));
+app.get("/api/jornadas", (req, res) => {
+  res.json(jornadas);
+});
 
 // ==============================
 // 🔹 Activar jornada
@@ -55,9 +68,13 @@ app.post("/api/activar/:id", (req, res) => {
   const { id } = req.params;
   jornadas.forEach((j) => (j.activa = false));
   const jornada = jornadas.find((j) => j.id === id);
-  if (!jornada) return res.status(404).json({ message: "No encontrada" });
+
+  if (!jornada) {
+    return res.status(404).json({ message: "Jornada no encontrada." });
+  }
+
   jornada.activa = true;
-  res.json({ message: "✅ Jornada activada", jornada });
+  res.json({ message: "✅ Jornada activada correctamente", jornada });
 });
 
 // ==============================
@@ -74,20 +91,38 @@ app.get("/api/jornada-activa", (req, res) => {
 app.post("/api/codigos", (req, res) => {
   const { cantidad } = req.body;
   if (!cantidad || cantidad <= 0)
-    return res.status(400).json({ message: "Cantidad inválida" });
+    return res.status(400).json({ message: "Cantidad inválida." });
 
   const nuevos = Array.from({ length: cantidad }).map(() => ({
     codigo: Math.random().toString(36).substring(2, 8).toUpperCase(),
     usado: false,
   }));
 
-  codigos.push(...nuevos);
-  res.json({ message: "🎟️ Códigos generados", nuevos });
+  codigos = [...codigos, ...nuevos];
+  res.json({ message: "🎟️ Códigos generados correctamente", nuevos });
 });
 
-app.get("/api/codigos", (req, res) => res.json(codigos));
+// ==============================
+// 🔹 Obtener lista de códigos
+// ==============================
+app.get("/api/codigos", (req, res) => {
+  res.json(codigos);
+});
+
+// ==============================
+// 🔹 Rutas para servir HTMLs
+// ==============================
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
 
 // ==============================
 // 🚀 Servidor
 // ==============================
-app.listen(PORT, () => console.log(`✅ Servidor activo en puerto ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`✅ Servidor activo en puerto ${PORT}`);
+});
