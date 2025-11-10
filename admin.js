@@ -2,8 +2,7 @@
 
 // Detectar si estamos en Render o local
 const API_URL = window.location.origin.includes("render.com")
-  ? "https://desafio-futbolero.onrender.com" // 👈 tu dominio de Render
-  : "http://localhost:3000";
+const API_BASE = "https://desafio-futbolero2-0.onrender.com/api";
 
 // ==============================
 // 🔹 Elementos del DOM
