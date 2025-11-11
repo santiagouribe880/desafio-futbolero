@@ -1,178 +1,127 @@
-// ==============================
-// 🌐 Configuración de API
-// ==============================
-// Detectar si estamos en Render o en local
-const API_URL = window.location.origin.includes("render.com")
-  ? "https://desafio-futbolero2-0.onrender.com/api"
-  : "http://localhost:3000/api";
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
+import path from "path";
+import { fileURLToPath } from "url";
+import { v4 as uuidv4 } from "uuid";
+
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 // ==============================
-// 🔹 Elementos del DOM
+// 📁 Configuración inicial
 // ==============================
-const formJornada = document.getElementById("formJornada");
-const partidosContainer = document.getElementById("partidosContainer");
-const agregarPartidoBtn = document.getElementById("agregarPartido");
-const selectJornada = document.getElementById("selectJornada");
-const activarJornadaBtn = document.getElementById("activarJornada");
-const cantidadCodigos = document.getElementById("cantidadCodigos");
-const generarCodigosBtn = document.getElementById("generarCodigos");
-const listaCodigos = document.getElementById("listaCodigos");
-const mensaje = document.getElementById("mensaje");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "public"))); // sirve los archivos del frontend
 
 // ==============================
-// 🔹 Mostrar mensaje
+// 📦 Datos en memoria (sin archivos JSON)
 // ==============================
-function mostrarMensaje(texto, tipo = "exito") {
-  mensaje.textContent = texto;
-  mensaje.className = `mensaje ${tipo}`;
-  setTimeout(() => (mensaje.textContent = ""), 4000);
-}
-
-// ==============================
-// 🔹 Agregar partido
-// ==============================
-agregarPartidoBtn.addEventListener("click", () => {
-  const div = document.createElement("div");
-  div.classList.add("partido");
-  div.innerHTML = `
-    <input type="text" class="local" placeholder="Equipo local" required />
-    <input type="text" class="visitante" placeholder="Equipo visitante" required />
-    <input type="datetime-local" class="fechaPartido" required />
-  `;
-  partidosContainer.appendChild(div);
-});
+let jornadas = [];
+let codigos = [];
 
 // ==============================
 // 🔹 Crear nueva jornada
 // ==============================
-formJornada.addEventListener("submit", async (e) => {
-  e.preventDefault();
+app.post("/api/jornada", (req, res) => {
+  const { nombre, premio, partidos } = req.body;
 
-  const nombre = document.getElementById("nombre").value.trim();
-  const premio = document.getElementById("premio").value.trim();
-
-  const partidos = Array.from(document.querySelectorAll(".partido")).map((p) => ({
-    local: p.querySelector(".local").value.trim(),
-    visitante: p.querySelector(".visitante").value.trim(),
-    fecha: p.querySelector(".fechaPartido").value,
-  }));
-
-  if (!nombre || !premio || partidos.length === 0) {
-    return mostrarMensaje("Completa todos los campos y agrega al menos un partido", "error");
+  if (!nombre || !premio || !partidos?.length) {
+    return res.status(400).json({ message: "Datos incompletos para crear la jornada." });
   }
 
-  try {
-    const res = await fetch(`${API_URL}/jornada`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre, premio, partidos }),
-    });
+  const nuevaJornada = {
+    id: uuidv4(),
+    nombre,
+    premio,
+    activa: false,
+    partidos: partidos.map((p) => ({
+      local: p.local,
+      visitante: p.visitante,
+      fecha: p.fecha,
+      resultado: null,
+    })),
+  };
 
-    if (!res.ok) throw new Error("Fallo en la conexión con el servidor");
+  jornadas.push(nuevaJornada);
+  console.log("✅ Nueva jornada creada:", nuevaJornada);
 
-    const data = await res.json();
-    mostrarMensaje("✅ Jornada creada correctamente");
-    formJornada.reset();
-    partidosContainer.innerHTML = ""; // limpia partidos creados
-    cargarJornadas();
-  } catch (err) {
-    console.error("❌ Error:", err);
-    mostrarMensaje("Error al conectar con el servidor", "error");
-  }
+  res.json({ message: "✅ Jornada creada con éxito", jornada: nuevaJornada });
 });
 
 // ==============================
-// 🔹 Cargar jornadas existentes
+// 🔹 Obtener todas las jornadas
 // ==============================
-async function cargarJornadas() {
-  try {
-    const res = await fetch(`${API_URL}/jornadas`);
-    if (!res.ok) throw new Error("Error al obtener jornadas");
-
-    const jornadas = await res.json();
-    selectJornada.innerHTML = "";
-
-    if (jornadas.length === 0) {
-      const option = document.createElement("option");
-      option.textContent = "No hay jornadas registradas";
-      selectJornada.appendChild(option);
-      return;
-    }
-
-    jornadas.forEach((j) => {
-      const option = document.createElement("option");
-      option.value = j.id;
-      option.textContent = `${j.nombre} (${j.activa ? "Activa" : "Inactiva"})`;
-      selectJornada.appendChild(option);
-    });
-  } catch (err) {
-    console.error("❌ Error cargando jornadas:", err);
-    mostrarMensaje("Error al cargar jornadas", "error");
-  }
-}
-cargarJornadas();
+app.get("/api/jornadas", (req, res) => {
+  res.json(jornadas);
+});
 
 // ==============================
 // 🔹 Activar jornada
 // ==============================
-activarJornadaBtn.addEventListener("click", async () => {
-  const id = selectJornada.value;
-  if (!id) return mostrarMensaje("Selecciona una jornada", "error");
+app.post("/api/activar/:id", (req, res) => {
+  const { id } = req.params;
+  jornadas.forEach((j) => (j.activa = false));
 
-  try {
-    const res = await fetch(`${API_URL}/activar/${id}`, { method: "POST" });
-    if (!res.ok) throw new Error("Error al activar jornada");
+  const jornada = jornadas.find((j) => j.id === id);
+  if (!jornada) return res.status(404).json({ message: "Jornada no encontrada." });
 
-    const data = await res.json();
-    mostrarMensaje("✅ Jornada activada correctamente");
-    cargarJornadas();
-  } catch (err) {
-    console.error("❌ Error al activar jornada:", err);
-    mostrarMensaje("Error al conectar con el servidor", "error");
-  }
+  jornada.activa = true;
+  console.log(`⚡ Jornada activada: ${jornada.nombre}`);
+  res.json({ message: "✅ Jornada activada correctamente", jornada });
 });
 
 // ==============================
-// 🔹 Generar códigos
+// 🔹 Obtener jornada activa
 // ==============================
-generarCodigosBtn.addEventListener("click", async () => {
-  const cantidad = parseInt(cantidadCodigos.value);
+app.get("/api/jornada-activa", (req, res) => {
+  const activa = jornadas.find((j) => j.activa);
+  res.json(activa || null);
+});
+
+// ==============================
+// 🔹 Generar códigos de acceso
+// ==============================
+app.post("/api/codigos", (req, res) => {
+  const { cantidad } = req.body;
   if (!cantidad || cantidad <= 0)
-    return mostrarMensaje("Cantidad inválida", "error");
+    return res.status(400).json({ message: "Cantidad inválida." });
 
-  try {
-    const res = await fetch(`${API_URL}/codigos`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cantidad }),
-    });
+  const nuevos = Array.from({ length: cantidad }).map(() => ({
+    codigo: Math.random().toString(36).substring(2, 8).toUpperCase(),
+    usado: false,
+  }));
 
-    if (!res.ok) throw new Error("Error generando códigos");
-
-    const data = await res.json();
-    mostrarMensaje(data.message || "Códigos generados correctamente");
-    mostrarCodigos();
-  } catch (err) {
-    console.error("❌ Error generando códigos:", err);
-    mostrarMensaje("Error al conectar con el servidor", "error");
-  }
+  codigos = [...codigos, ...nuevos];
+  console.log(`🎟️ Generados ${cantidad} códigos nuevos.`);
+  res.json({ message: "🎟️ Códigos generados correctamente", nuevos });
 });
 
 // ==============================
-// 🔹 Mostrar códigos
+// 🔹 Obtener lista de códigos
 // ==============================
-async function mostrarCodigos() {
-  try {
-    const res = await fetch(`${API_URL}/codigos`);
-    if (!res.ok) throw new Error("Error obteniendo códigos");
+app.get("/api/codigos", (req, res) => {
+  res.json(codigos);
+});
 
-    const codigos = await res.json();
-    listaCodigos.innerHTML =
-      "<h3>Códigos Generados:</h3>" +
-      codigos.map((c) => `<div>${c.codigo} ${c.usado ? "(Usado)" : ""}</div>`).join("");
-  } catch (err) {
-    console.error("❌ Error mostrando códigos:", err);
-    mostrarMensaje("Error al mostrar códigos", "error");
-  }
-}
-mostrarCodigos();
+// ==============================
+// 🔹 Rutas del frontend
+// ==============================
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
+
+// ==============================
+// 🚀 Iniciar servidor
+// ==============================
+app.listen(PORT, () => {
+  console.log(`✅ Servidor activo en puerto ${PORT}`);
+});
