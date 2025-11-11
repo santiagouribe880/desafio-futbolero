@@ -3,6 +3,14 @@ services:
     name: desafio-futbolero2-0
     env: node
     plan: free
-    buildCommand: "npm install"
-    startCommand: "npm start"
+    buildCommand: npm install
+    startCommand: node server.js
     autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+    healthCheckPath: /
+    routes:
+      - type: rewrite
+        source: /.*
+        destination: /
